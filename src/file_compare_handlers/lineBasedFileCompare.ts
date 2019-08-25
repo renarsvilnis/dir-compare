@@ -7,7 +7,6 @@ import Promise from "bluebird";
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
 import BufferPool from "../utils/BufferPool";
 import { closeFilesAsync } from "./common";
-import { Options } from "../types";
 import { BufferPoolEntry } from "../utils/BufferPool";
 
 const MAX_CONCURRENT_FILE_COMPARE = 8;
@@ -16,12 +15,17 @@ const fdQueue = new FileDescriptorQueue(MAX_CONCURRENT_FILE_COMPARE * 2);
 const wrapper = require("./common").wrapper(fdQueue);
 const bufferPool = new BufferPool(BUF_SIZE, MAX_CONCURRENT_FILE_COMPARE); // fdQueue guarantees there will be no more than MAX_CONCURRENT_FILE_COMPARE async processes accessing the buffers concurrently
 
+export interface LineBasedFileCompareOptions {
+  ignoreLineEnding: boolean;
+  ignoreWhiteSpaces: boolean;
+}
+
 export default function lineBasedFileCompare(
   path1: string,
   stat1: Stats,
   path2: string,
   stat2: Stats,
-  options: Options
+  options: LineBasedFileCompareOptions
 ) {
   let fd1: number;
   let fd2: number;
@@ -84,7 +88,7 @@ function removeWhiteSpaces(str: string) {
   );
 }
 
-function compareLines(lines1: string[], lines2: string[], options: Options) {
+function compareLines(lines1: string[], lines2: string[], options: LineBasedFileCompareOptions) {
   for (var i = 0; i < lines1.length - 1; i++) {
     var line1 = lines1[i];
     var line2 = lines2[i];

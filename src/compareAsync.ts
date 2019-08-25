@@ -11,7 +11,7 @@ import {
   cloneSymlinkCache,
   filterEntry
 } from "./utils";
-import { Entry, SymlinkCache, Options, Statistics } from "./types";
+import { Entry, SymlinkCache, Options, Statistics, Difference, DifferenceType } from "./types";
 
 const statAsync = Promise.promisify(fs.stat);
 const readdirAsync = Promise.promisify(fs.readdir);
@@ -277,7 +277,7 @@ function getEntries(absolutePath: path, path: path, options, loopDetected: boole
   }
 }
 
-function buildEntries(absolutePath: string, path: string, rawEntries, options) {
+function buildEntries(absolutePath: string, path: string, rawEntries, options: Options) {
   var promisedEntries = [];
   rawEntries.forEach(function(entryName) {
     promisedEntries.push(buildEntry(absolutePath, path, entryName, options));
@@ -293,7 +293,7 @@ function buildEntries(absolutePath: string, path: string, rawEntries, options) {
   });
 }
 
-function buildEntry(absolutePath: string, path: string, entryName, options) {
+function buildEntry(absolutePath: string, path: string, entryName: string, options: Options) {
   var entryAbsolutePath = absolutePath + PATH_SEP + entryName;
   var entryPath = path + PATH_SEP + entryName;
   return Promise.resolve(fsPromise.lstat(entryAbsolutePath)).then(function(lstatEntry) {
@@ -320,14 +320,14 @@ function buildEntry(absolutePath: string, path: string, entryName, options) {
 function doStats(
   entry1: Entry,
   entry2: Entry,
-  same,
-  statistics,
-  options,
-  level,
+  same: boolean,
+  statistics: Statistics,
+  options: Options,
+  level: number,
   relativePath: string,
-  diffSet,
-  type1,
-  type2
+  diffSet: Difference[],
+  type1: DifferenceType,
+  type2: DifferenceType
 ) {
   if (!options.noDiffSet) {
     options.resultBuilder(

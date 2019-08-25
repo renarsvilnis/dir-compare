@@ -6,13 +6,28 @@ import compareAsyncInternal from "./compareAsync";
 import defaultResultBuilderCallback from "./defaultResultBuilderCallback";
 import * as defaultFileCompare from "./file_compare_handlers/defaultFileCompare";
 import * as lineBasedFileCompare from "./file_compare_handlers/lineBasedFileCompare";
-import { entryFactory, symlinkCacheFactory, statisticsFactory } from "./utils";
+import { entryFactory, symlinkCacheFactory, statisticsFactory, isNumericLike } from "./utils";
 
 const realPathAsync = promisify(fs.realpath);
 
 import { Options, Statistics, Difference } from "./types";
 type DiffSet = Difference[];
 type AsyncDiffSet = (DiffSet | Difference)[];
+
+export const DefaultOptions = {
+  compareSize: false,
+  compareDate: false,
+  dateTolerance: 1000,
+  compareContent: false,
+  skipSubdirs: false,
+  skipSymlinks: false,
+  ignoreCase: false,
+  noDiffSet: false,
+  // includeFilter:
+  // excludeFilter
+  compareFile: defaultFileCompare,
+  resultBuilder: defaultResultBuilderCallback
+};
 
 export async function compareAsync(path1: string, path2: string, options: Options): Promise<Statistics> {
   const [realPath1, realPath2] = await Promise.all([realPathAsync(path1), realPathAsync(path2)]);
@@ -55,16 +70,13 @@ export async function compareAsync(path1: string, path2: string, options: Option
 function prepareOptions(options: Options): Options {
   options = options || {};
 
-  // TODO: should it just use the util clone?
+  // TODO: should it just use the util.clone? See that it doesnt copy methods!
   var clone = JSON.parse(JSON.stringify(options));
-  clone.resultBuilder = options.resultBuilder;
   clone.compareFile = options.compareFile || defaultFileCompare;
-  if (!clone.resultBuilder) {
-    clone.resultBuilder = defaultResultBuilderCallback;
-  }
-  clone.dateTolerance = clone.dateTolerance || 1000;
-  clone.dateTolerance = Number(clone.dateTolerance);
-  if (isNaN(clone.dateTolerance)) {
+  clone.resultBuilder = options.resultBuilder || defaultResultBuilderCallback;
+  clone.dateTolerance = clone.dateTolerance ? Number(clone.dateTolerance) : 1000;
+
+  if (isNumericLike(clone.dateTolerance)) {
     throw new Error("Date tolerance is not a number");
   }
   return clone;

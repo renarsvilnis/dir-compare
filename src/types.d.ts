@@ -26,7 +26,7 @@ export interface Options {
   /**
    * Properties to be used in various extension points ie. result builder.
    */
-  [key: string]: any;
+  // [key: string]: any;
 
   /**
    * Compares files by size. Defaults to 'false'.
@@ -87,6 +87,11 @@ export interface Options {
    * File comparison handler.
    */
   compareFile: CompareFile;
+
+  // TODO: seperate specific file compare options from general
+  // Only used for lineBasedFileCompare
+  ignoreLineEnding: boolean;
+  ignoreWhiteSpaces: boolean;
 }
 
 export interface Entry {
@@ -136,7 +141,7 @@ export interface Statistics {
   /**
    * Any property is allowed if default result builder is not used.
    */
-  [key: string]: any;
+  // [key: string]: any;
 
   /**
    * number of distinct entries.
@@ -221,7 +226,11 @@ export interface Statistics {
   /**
    * List of changes (present if Options.noDiffSet is false).
    */
-  diffSet?: Array<Difference>;
+  diffSet?: Difference[];
+
+  total: number;
+  totalFiles: number;
+  totalDirs: number;
 }
 
 export type DifferenceState = "equal" | "left" | "right" | "distinct";

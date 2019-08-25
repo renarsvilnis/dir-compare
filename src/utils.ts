@@ -1,6 +1,14 @@
 import * as fs from "fs";
 import minimatch from "minimatch";
+
 import { Entry, DifferenceType, Options, SymlinkCache, Statistics, SymlinkCacheGroup } from "./types";
+
+// Insted of shallow copy
+// https://stackoverflow.com/a/10916838/1378261
+// import v8 from "v8";
+// const structuredClone = (obj: any) => {
+//   return v8.deserialize(v8.serialize(obj));
+// };
 
 export function detectLoop(entry: Entry, symlinkCacheGroup: SymlinkCacheGroup) {
   if (entry && entry.symlink) {
