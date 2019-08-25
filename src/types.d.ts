@@ -10,6 +10,17 @@ export interface SymlinkCache {
   dir2: SymlinkCacheGroup;
 }
 
+export interface CreateEntryOptions {
+  entry1: Entry | undefined;
+  entry2: Entry | undefined;
+  state: DifferenceState;
+  level: number;
+  relativePath: string;
+  options: Partial<Options>;
+  statistics: Statistics;
+  diffset: DiffSet;
+}
+
 export type ResultBuilderFn = (
   entry1: Entry | undefined,
   entry2: Entry | undefined,
@@ -18,7 +29,7 @@ export type ResultBuilderFn = (
   relativePath: string,
   options: Partial<Options>,
   statistics: Statistics,
-  diffset: DiffSet
+  diffset: AsyncDiffSet
 ) => void;
 
 export type DiffSet = Difference[];

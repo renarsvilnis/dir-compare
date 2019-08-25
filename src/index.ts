@@ -10,7 +10,7 @@ import { entryFactory, symlinkCacheFactory, statisticsFactory, isNumericLike } f
 
 const realpathAsync = promisify(fs.realpath);
 
-import { Options, Statistics, DiffSet, AsyncDiffSet } from "./types";
+import { Options, Statistics, DiffSet, AsyncDiffSet, Difference } from "./types";
 
 const DefaultOptions = {
   compareSize: false,
@@ -39,9 +39,15 @@ export async function compareAsync(path1: string, path2: string, options: Option
   // Resursive diffset
   const asyncDiffSet: AsyncDiffSet = [];
 
+  // const differences: DiffSet = [];
+
   const symlinkCache = symlinkCacheFactory();
   const initialLevel = 0;
   const initialRelativePath = "";
+
+  // const onEntry = (entry: Difference) => {
+  //   const;
+  // };
 
   await compareAsyncInternal(
     entryFactory(absolutePath1, path1, pathUtils.basename(path1)),

@@ -18,6 +18,9 @@ const statAsync = promisify(fs.stat);
 const readdirAsync = promisify(fs.readdir);
 const lstatAsync = promisify(fs.lstat);
 
+// TODO: maybe do statistics afterwards on when each entry is built on a
+// callback, like on('start'), on('entry'), on('finish')
+
 /**
  * Compares two directories asynchronously.
  */
@@ -241,7 +244,7 @@ let same = undefined;
 /**
  * Returns the sorted list of entries in a directory.
  */
-function getEntries(absolutePath: path, path: path, options, loopDetected: boolean): Promise<Entry[]> {
+function getEntries(absolutePath: string, path: string, options: Options, loopDetected: boolean): Promise<Entry[]> {
   if (!absolutePath || loopDetected) {
     return Promise.resolve([]);
   } else {
