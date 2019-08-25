@@ -1,9 +1,9 @@
-import fs, { Stats } from "fs";
+import { Stats } from "fs";
 import bufferEqual from "buffer-equal";
 import Promise from "bluebird";
 
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
-import { closeFilesSync, closeFilesAsync } from "./common";
+import { closeFilesAsync } from "./common";
 import BufferPool, { BufferPoolEntry } from "../utils/BufferPool";
 import { Options } from "../types";
 
@@ -15,40 +15,9 @@ var wrapper = require("./common").wrapper(fdQueue);
 const bufferPool = new BufferPool(BUF_SIZE, MAX_CONCURRENT_FILE_COMPARE); // fdQueue guarantees there will be no more than MAX_CONCURRENT_FILE_COMPARE async processes accessing the buffers concurrently
 
 /**
- * Compares two files by content.
- */
-export function compareSync(path1: string, stat1: Stats, path2: string, stat2: Stats, options: Options) {
-  let fd1: number | undefined;
-  let fd2: number | undefined;
-  const bufferPair = bufferPool.allocateBuffers();
-  try {
-    fd1 = fs.openSync(path1, "r");
-    fd2 = fs.openSync(path2, "r");
-    var buf1 = bufferPair.buf1;
-    var buf2 = bufferPair.buf2;
-    // let progress = 0;
-    while (true) {
-      var size1 = fs.readSync(fd1, buf1, 0, BUF_SIZE, null);
-      var size2 = fs.readSync(fd2, buf2, 0, BUF_SIZE, null);
-      if (size1 !== size2) {
-        return false;
-      } else if (size1 === 0) {
-        // End of file reached
-        return true;
-      } else if (!compareBuffers(buf1, buf2, size1)) {
-        return false;
-      }
-    }
-  } finally {
-    closeFilesSync(fd1, fd2);
-    BufferPool.freeBuffers(bufferPair);
-  }
-}
-
-/**
  * Compares two files by content
  */
-export function compareAsync(path1: string, stat1: Stats, path2: string, stat2: Stats, options: Options) {
+export function defaultFileCompare(path1: string, stat1: Stats, path2: string, stat2: Stats, options: Options) {
   let fd1: number | undefined;
   let fd2: number | undefined;
   let bufferPair: BufferPoolEntry | undefined;

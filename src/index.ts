@@ -2,7 +2,6 @@ import * as pathUtils from "path";
 import * as fs from "fs";
 import { promisify } from "util";
 
-import compareSyncInternal from "./compareSync";
 import compareAsyncInternal from "./compareAsync";
 import defaultResultBuilderCallback from "./defaultResultBuilderCallback";
 import * as defaultFileCompare from "./file_compare_handlers/defaultFileCompare";
@@ -14,36 +13,6 @@ const realPathAsync = promisify(fs.realpath);
 import { Options, Statistics, Difference } from "./types";
 type DiffSet = Difference[];
 type AsyncDiffSet = (DiffSet | Difference)[];
-
-export function compareSync(path1: string, path2: string, options: Options): Statistics {
-  // realpathSync() is necessary for loop detection to work properly
-  var absolutePath1 = pathUtils.normalize(pathUtils.resolve(fs.realpathSync(path1)));
-  var absolutePath2 = pathUtils.normalize(pathUtils.resolve(fs.realpathSync(path2)));
-  const statistics = statisticsFactory();
-
-  let diffSet: DiffSet | undefined = undefined;
-  options = prepareOptions(options);
-  if (!options.noDiffSet) {
-    diffSet = [];
-  }
-
-  const symlinkCache = symlinkCacheFactory();
-
-  compareSyncInternal(
-    entryFactory(absolutePath1, path1, pathUtils.basename(absolutePath1)),
-    entryFactory(absolutePath2, path2, pathUtils.basename(absolutePath2)),
-    0,
-    "",
-    options,
-    statistics,
-    diffSet,
-    symlinkCache
-  );
-  completeStatistics(statistics);
-  statistics.diffSet = diffSet;
-
-  return statistics;
-}
 
 export async function compareAsync(path1: string, path2: string, options: Options): Promise<Statistics> {
   const [realPath1, realPath2] = await Promise.all([realPathAsync(path1), realPathAsync(path2)]);
@@ -85,18 +54,13 @@ export async function compareAsync(path1: string, path2: string, options: Option
 
 function prepareOptions(options: Options): Options {
   options = options || {};
+
+  // TODO: should it just use the util clone?
   var clone = JSON.parse(JSON.stringify(options));
   clone.resultBuilder = options.resultBuilder;
-  clone.compareFileSync = options.compareFileSync;
-  clone.compareFileAsync = options.compareFileAsync;
+  clone.compareFile = options.compareFile || defaultFileCompare;
   if (!clone.resultBuilder) {
     clone.resultBuilder = defaultResultBuilderCallback;
-  }
-  if (!clone.compareFileSync) {
-    clone.compareFileSync = defaultFileCompare.compareSync;
-  }
-  if (!clone.compareFileAsync) {
-    clone.compareFileAsync = defaultFileCompare.compareAsync;
   }
   clone.dateTolerance = clone.dateTolerance || 1000;
   clone.dateTolerance = Number(clone.dateTolerance);

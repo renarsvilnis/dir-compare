@@ -2,42 +2,7 @@
 
 import * as fs from "fs";
 
-export function compareSync(path1: string, path2: string, options?: Partial<Options>): Statistics;
 export function compare(path1: string, path2: string, options?: Partial<Options>): Promise<Statistics>;
-
-/**
- * Output format:
- *  distinct: number of distinct entries
- *  equal: number of equal entries
- *  left: number of entries only in path1
- *  right: number of entries only in path2
- *  differences: total number of differences (distinct+left+right)
- *  distinctFiles: number of distinct files
- *  equalFiles: number of equal files
- *  leftFiles: number of files only in path1
- *  rightFiles: number of files only in path2
- *  differencesFiles: total number of different files (distinctFiles+leftFiles+rightFiles)
- *  distinctDirs: number of distinct directories
- *  equalDirs: number of equal directories
- *  leftDirs: number of directories only in path1
- *  rightDirs: number of directories only in path2
- *  differencesDirs: total number of different directories (distinctDirs+leftDirs+rightDirs)
- *  same: true if directories are identical
- *  diffSet - List of changes (present if Options.noDiffSet is false)
- *      path1: absolute path not including file/directory name,
- *      path2: absolute path not including file/directory name,
- *      relativePath: common path relative to root,
- *      name1: file/directory name
- *      name2: file/directory name
- *      state: one of equal, left, right, distinct,
- *      type1: one of missing, file, directory
- *      type2: one of missing, file, directory
- *      size1: file size
- *      size2: file size
- *      date1: modification date (stat.mtime)
- *      date2: modification date (stat.mtime)
- *      level: depth
- */
 
 export type SymlinkCacheGroup = { [key: string]: boolean };
 export interface SymlinkCache {
@@ -119,14 +84,9 @@ export interface Options {
   resultBuilder: ResultBuilderFn;
 
   /**
-   * Sync File comparison handler.
+   * File comparison handler.
    */
-  compareFileSync: CompareFileSync;
-
-  /**
-   * Async File comparison handler.
-   */
-  compareFileAsync: CompareFileAsync;
+  compareFile: CompareFile;
 }
 
 export interface Entry {
@@ -138,6 +98,39 @@ export interface Entry {
   symlink: boolean;
 }
 
+/**
+ * Output format:
+ *  distinct: number of distinct entries
+ *  equal: number of equal entries
+ *  left: number of entries only in path1
+ *  right: number of entries only in path2
+ *  differences: total number of differences (distinct+left+right)
+ *  distinctFiles: number of distinct files
+ *  equalFiles: number of equal files
+ *  leftFiles: number of files only in path1
+ *  rightFiles: number of files only in path2
+ *  differencesFiles: total number of different files (distinctFiles+leftFiles+rightFiles)
+ *  distinctDirs: number of distinct directories
+ *  equalDirs: number of equal directories
+ *  leftDirs: number of directories only in path1
+ *  rightDirs: number of directories only in path2
+ *  differencesDirs: total number of different directories (distinctDirs+leftDirs+rightDirs)
+ *  same: true if directories are identical
+ *  diffSet - List of changes (present if Options.noDiffSet is false)
+ *      path1: absolute path not including file/directory name,
+ *      path2: absolute path not including file/directory name,
+ *      relativePath: common path relative to root,
+ *      name1: file/directory name
+ *      name2: file/directory name
+ *      state: one of equal, left, right, distinct,
+ *      type1: one of missing, file, directory
+ *      type2: one of missing, file, directory
+ *      size1: file size
+ *      size2: file size
+ *      date1: modification date (stat.mtime)
+ *      date2: modification date (stat.mtime)
+ *      level: depth
+ */
 export interface Statistics {
   // TODO: remove this wildcard or add InternalOptions interfaces for using inside of library
   /**
@@ -300,29 +293,10 @@ export interface Difference {
   level: number;
 }
 
-export type CompareFileSync = (
-  path1: string,
-  stat1: fs.Stats,
-  path2: string,
-  stat2: fs.Stats,
-  options: Partial<Options>
-) => boolean;
-
-export type CompareFileAsync = (
+export type CompareFile = (
   path1: string,
   stat1: fs.Stats,
   path2: string,
   stat2: fs.Stats,
   options: Partial<Options>
 ) => Promise<boolean>;
-
-export const fileCompareHandlers: {
-  defaultFileCompare: {
-    compareSync: CompareFileSync;
-    compareAsync: CompareFileAsync;
-  };
-  lineBasedFileCompare: {
-    compareSync: CompareFileSync;
-    compareAsync: CompareFileAsync;
-  };
-};

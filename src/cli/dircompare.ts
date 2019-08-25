@@ -8,7 +8,7 @@ import * as dircompare from "../index";
 import print from "../print";
 import { isNumericLike } from "../utils";
 import pjson from "./../../package.json";
-import { Options, Statistics } from "../types";
+import { Options } from "../types";
 
 program
   .version(pjson.version)
@@ -28,8 +28,7 @@ program
   .option("-a, --show-all", "report - show all entries")
   .option("-w, --whole-report", "report - include directories in detailed report")
   .option("--csv", "report - print details as csv")
-  .option("--nocolors", "don't use console colors")
-  .option("--async", "Make use of multiple cores");
+  .option("--nocolors", "don't use console colors");
 
 program.on("--help", function() {
   console.log("  By default files are compared by size.");
@@ -85,7 +84,6 @@ function run() {
       dateTolerance: program.dateTolerance || 1000
     };
 
-    const async = program.async;
     const path1 = program.args[0];
     const path2 = program.args[1];
 
@@ -108,15 +106,7 @@ function run() {
       return;
     }
 
-    // compare
-    const compareFn = async
-      ? dircompare.compareAsync
-      : () =>
-          new Promise<Statistics>(resolve => {
-            resolve(dircompare.compareSync(path1, path2, options));
-          });
-
-    compareFn(path1, path2, options).then(
+    dircompare.compareAsync(path1, path2, options).then(
       res => {
         // PRINT DETAILS
         print(res, process.stdout, program);

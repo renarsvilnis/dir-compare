@@ -2,11 +2,11 @@
  * Compare files line by line with options to ignore
  * line endings and white space differencies.
  */
-import fs, { Stats } from "fs";
+import { Stats } from "fs";
 import Promise from "bluebird";
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
 import BufferPool from "../utils/BufferPool";
-import { closeFilesSync, closeFilesAsync } from "./common";
+import { closeFilesAsync } from "./common";
 import { Options } from "../types";
 import { BufferPoolEntry } from "../utils/BufferPool";
 
@@ -16,44 +16,13 @@ const fdQueue = new FileDescriptorQueue(MAX_CONCURRENT_FILE_COMPARE * 2);
 const wrapper = require("./common").wrapper(fdQueue);
 const bufferPool = new BufferPool(BUF_SIZE, MAX_CONCURRENT_FILE_COMPARE); // fdQueue guarantees there will be no more than MAX_CONCURRENT_FILE_COMPARE async processes accessing the buffers concurrently
 
-export function compareSync(path1: string, stat1: Stats, path2: string, stat2: Stats, options: Options) {
-  var fd1, fd2;
-  var bufferPair = bufferPool.allocateBuffers();
-  try {
-    fd1 = fs.openSync(path1, "r");
-    fd2 = fs.openSync(path2, "r");
-    var buf1 = bufferPair.buf1;
-    var buf2 = bufferPair.buf2;
-    // let progress = 0;
-    var last1 = "",
-      last2 = "";
-    while (true) {
-      var size1 = fs.readSync(fd1, buf1, 0, BUF_SIZE, null);
-      var size2 = fs.readSync(fd2, buf2, 0, BUF_SIZE, null);
-      var chunk1 = buf1.toString("utf8", 0, size1);
-      var chunk2 = buf2.toString("utf8", 0, size2);
-      var lines1 = (last1 + chunk1).split(/\n/);
-      var lines2 = (last2 + chunk2).split(/\n/);
-      if (size1 === 0 && size2 === 0) {
-        // End of file reached
-        return true;
-      } else if (lines1.length !== lines2.length) {
-        return false;
-      } else {
-        if (!compareLines(lines1, lines2, options)) {
-          return false;
-        }
-        last1 = lines1[lines1.length - 1];
-        last2 = lines2[lines2.length - 1];
-      }
-    }
-  } finally {
-    closeFilesSync(fd1, fd2);
-    BufferPool.freeBuffers(bufferPair);
-  }
-}
-
-export function compareAsync(path1: string, stat1: Stats, path2: string, stat2: Stats, options: Options) {
+export default function lineBasedFileCompare(
+  path1: string,
+  stat1: Stats,
+  path2: string,
+  stat2: Stats,
+  options: Options
+) {
   let fd1: number;
   let fd2: number;
   let bufferPair: BufferPoolEntry | undefined;

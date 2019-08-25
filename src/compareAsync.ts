@@ -32,16 +32,15 @@ export default function compareAsync(
   diffSet,
   symlinkCache: SymlinkCache
 ) {
-  var loopDetected1 = detectLoop(rootEntry1, symlinkCache.dir1);
-  var loopDetected2 = detectLoop(rootEntry2, symlinkCache.dir2);
+  const loopDetected1 = detectLoop(rootEntry1, symlinkCache.dir1);
+  const loopDetected2 = detectLoop(rootEntry2, symlinkCache.dir2);
 
-  var symlinkCachePath1, symlinkCachePath2;
   if (rootEntry1 && !loopDetected1) {
-    symlinkCachePath1 = rootEntry1.symlink ? fs.realpathSync(rootEntry1.absolutePath) : rootEntry1.absolutePath;
+    const symlinkCachePath1 = rootEntry1.symlink ? fs.realpathSync(rootEntry1.absolutePath) : rootEntry1.absolutePath;
     symlinkCache.dir1[symlinkCachePath1] = true;
   }
   if (rootEntry2 && !loopDetected2) {
-    symlinkCachePath2 = rootEntry2.symlink ? fs.realpathSync(rootEntry2.absolutePath) : rootEntry2.absolutePath;
+    const symlinkCachePath2 = rootEntry2.symlink ? fs.realpathSync(rootEntry2.absolutePath) : rootEntry2.absolutePath;
     symlinkCache.dir2[symlinkCachePath2] = true;
   }
   const absolutePath1 = rootEntry1 ? rootEntry1.absolutePath : undefined;
