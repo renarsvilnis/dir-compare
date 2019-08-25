@@ -10,7 +10,7 @@ import { Entry, DifferenceType, Options, SymlinkCache, Statistics, SymlinkCacheG
 //   return v8.deserialize(v8.serialize(obj));
 // };
 
-export function detectLoop(entry: Entry, symlinkCacheGroup: SymlinkCacheGroup) {
+export function detectLoop(entry: Entry | undefined, symlinkCacheGroup: SymlinkCacheGroup) {
   if (entry && entry.symlink) {
     var realPath = fs.realpathSync(entry.absolutePath);
     if (symlinkCacheGroup[realPath]) {

@@ -74,13 +74,6 @@ function run() {
       ignoreCase: program.ignoreCase,
       includeFilter: program.filter,
       excludeFilter: program.exclude,
-      noDiffSet: !(
-        program.showAll ||
-        program.showEqual ||
-        program.showLeft ||
-        program.showRight ||
-        program.showDistinct
-      ),
       dateTolerance: program.dateTolerance || 1000
     };
 

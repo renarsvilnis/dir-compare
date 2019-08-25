@@ -39,7 +39,8 @@
   },
   "scripts": {
     "pretest": "tsc -p tsconfig.json",
-    "test": "istanbul cover tests/runTests.js"
+    "test": "istanbul cover tests/runTests.js",
+    "build": "tsc"
   },
   "author": "Liviu Grigorescu",
   "license": "MIT",

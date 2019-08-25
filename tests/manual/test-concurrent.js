@@ -3,7 +3,6 @@ var os = require('os')
 
 var options = {
     compareContent: true,
-    noDiffSet: true
 };
 
 var path1 = `/${os.tmpdir()}/linux-4.3`;

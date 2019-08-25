@@ -18,8 +18,18 @@ export type ResultBuilderFn = (
   relativePath: string,
   options: Partial<Options>,
   statistics: Statistics,
-  diffset: Array<Difference> | undefined
+  diffset: DiffSet
 ) => void;
+
+export type DiffSet = Difference[];
+
+/**
+ * Workaround to make the interface infinitly nestable
+ * Reference: https://stackoverflow.com/a/45999529/1378261
+ */
+type DiffSetItem = Difference[] | AsyncDiffSet;
+// TODO: rename "AsyncDiffSet" to "NestedDiffSet"
+export interface AsyncDiffSet extends Array<DiffSetItem> {}
 
 export interface Options {
   // TODO: remove this wildcard or add InternalOptions interfaces for using inside of library
@@ -62,11 +72,6 @@ export interface Options {
    * Ignores case when comparing names. Defaults to 'false'.
    */
   ignoreCase: boolean;
-
-  /**
-   * Toggles presence of diffSet in output. If true, only statistics are provided. Use this when comparing large number of files to avoid out of memory situations. Defaults to 'false'.
-   */
-  noDiffSet: boolean;
 
   /**
    * File name filter. Comma separated [minimatch](https://www.npmjs.com/package/minimatch) patterns.
@@ -121,7 +126,7 @@ export interface Entry {
  *  rightDirs: number of directories only in path2
  *  differencesDirs: total number of different directories (distinctDirs+leftDirs+rightDirs)
  *  same: true if directories are identical
- *  diffSet - List of changes (present if Options.noDiffSet is false)
+ *  diffSet - List of changes
  *      path1: absolute path not including file/directory name,
  *      path2: absolute path not including file/directory name,
  *      relativePath: common path relative to root,
@@ -224,7 +229,7 @@ export interface Statistics {
   same: boolean;
 
   /**
-   * List of changes (present if Options.noDiffSet is false).
+   * List of changes
    */
   diffSet?: Difference[];
 
@@ -233,18 +238,21 @@ export interface Statistics {
   totalDirs: number;
 }
 
+// TODO: implement
+// DifferenceDistinct | DifferenceLeft | DifferenceRight
+
 export type DifferenceState = "equal" | "left" | "right" | "distinct";
 export type DifferenceType = "missing" | "file" | "directory";
-export interface Difference {
+export interface DifferenceEqual {
   /**
    * path not including file/directory name; can be relative or absolute depending on call to compare().
    */
-  path1?: string;
+  path1: string;
 
   /**
    * path not including file/directory name; can be relative or absolute depending on call to compare().
    */
-  path2?: string;
+  path2: string;
 
   /**
    * path relative to root.
@@ -254,53 +262,103 @@ export interface Difference {
   /**
    * file/directory name.
    */
-  name1?: string;
+  name1: string;
 
   /**
    * file/directory name.
    */
-  name2?: string;
+  name2: string;
 
   /**
    * one of equal, left, right, distinct.
    */
-  state: DifferenceState;
+  state: "equal";
 
   /**
    * one of missing, file, directory.
    */
-  type1: DifferenceType;
+  type1: "file" | "directory";
 
   /**
    * one of missing, file, directory.
    */
-  type2: DifferenceType;
+  type2: "file" | "directory";
 
   /**
    * file size.
    */
-  size1?: number;
+  size1: number;
 
   /**
    * file size.
    */
-  size2?: number;
+  size2: number;
 
   /**
    * modification date (stat.mtime).
    */
-  date1?: number;
+  date1: number;
 
   /**
    * modification date (stat.mtime).
    */
-  date2?: number;
+  date2: number;
 
   /**
    * depth.
    */
   level: number;
 }
+
+export interface DifferenceDistinct {
+  path1: string;
+  path2: string;
+  relativePath: string;
+  name1: string;
+  name2: string;
+  state: "distinct";
+  type1: "file" | "directory";
+  type2: "file" | "directory";
+  size1: number;
+  size2: number;
+  date1: number;
+  date2: number;
+  level: number;
+}
+
+export interface DifferenceLeft {
+  path1: string;
+  path2: undefined;
+  relativePath: string;
+  name1: string;
+  name2: undefined;
+  state: "left";
+  type1: "file" | "directory";
+  type2: "missing";
+  size1: number;
+  size2: undefined;
+  date1: number;
+  date2: undefined;
+  level: number;
+}
+
+export interface DifferenceRight {
+  path1: undefined;
+  path2: string;
+  relativePath: string;
+  name1: undefined;
+  name2: string;
+  state: "right";
+  type1: "missing";
+  type2: "file" | "directory";
+  size1: undefined;
+  size2: number;
+  date1: undefined;
+  date2: number;
+  level: number;
+}
+
+export type Difference = DifferenceEqual | DifferenceDistinct | DifferenceLeft | DifferenceRight;
 
 export type CompareFile = (
   path1: string,

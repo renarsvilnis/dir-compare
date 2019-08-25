@@ -8,11 +8,9 @@ import * as defaultFileCompare from "./file_compare_handlers/defaultFileCompare"
 import * as lineBasedFileCompare from "./file_compare_handlers/lineBasedFileCompare";
 import { entryFactory, symlinkCacheFactory, statisticsFactory, isNumericLike } from "./utils";
 
-const realPathAsync = promisify(fs.realpath);
+const realpathAsync = promisify(fs.realpath);
 
-import { Options, Statistics, Difference } from "./types";
-type DiffSet = Difference[];
-type AsyncDiffSet = (DiffSet | Difference)[];
+import { Options, Statistics, DiffSet, AsyncDiffSet } from "./types";
 
 const DefaultOptions = {
   compareSize: false,
@@ -22,7 +20,6 @@ const DefaultOptions = {
   skipSubdirs: false,
   skipSymlinks: false,
   ignoreCase: false,
-  noDiffSet: false,
   // includeFilter:
   // excludeFilter
   compareFile: defaultFileCompare,
@@ -30,7 +27,7 @@ const DefaultOptions = {
 };
 
 export async function compareAsync(path1: string, path2: string, options: Options): Promise<Statistics> {
-  const [realPath1, realPath2] = await Promise.all([realPathAsync(path1), realPathAsync(path2)]);
+  const [realPath1, realPath2] = await Promise.all([realpathAsync(path1), realpathAsync(path2)]);
 
   // realpath() is necessary for loop detection to work properly
   const absolutePath1 = pathUtils.normalize(pathUtils.resolve(realPath1));
@@ -40,29 +37,26 @@ export async function compareAsync(path1: string, path2: string, options: Option
   options = prepareOptions(options);
 
   // Resursive diffset
-  let asyncDiffSet: AsyncDiffSet | undefined = undefined;
-  if (!options.noDiffSet) {
-    asyncDiffSet = [];
-  }
+  const asyncDiffSet: AsyncDiffSet = [];
 
   const symlinkCache = symlinkCacheFactory();
+  const initialLevel = 0;
+  const initialRelativePath = "";
 
   await compareAsyncInternal(
     entryFactory(absolutePath1, path1, pathUtils.basename(path1)),
     entryFactory(absolutePath2, path2, pathUtils.basename(path2)),
-    0,
-    "",
+    initialLevel,
+    initialRelativePath,
     options,
     statistics,
     asyncDiffSet,
     symlinkCache
   );
 
-  completeStatistics(statistics);
+  normalizeStatistics(statistics);
 
-  if (!options.noDiffSet) {
-    statistics.diffSet = rebuildAsyncDiffSet(asyncDiffSet!);
-  }
+  statistics.diffSet = flattenAsyncDiffSet(asyncDiffSet!);
 
   return statistics;
 }
@@ -82,7 +76,7 @@ function prepareOptions(options: Options): Options {
   return clone;
 }
 
-function completeStatistics(statistics: Statistics) {
+function normalizeStatistics(statistics: Statistics) {
   statistics.differences = statistics.distinct + statistics.left + statistics.right;
   statistics.differencesFiles = statistics.distinctFiles + statistics.leftFiles + statistics.rightFiles;
   statistics.differencesDirs = statistics.distinctDirs + statistics.leftDirs + statistics.rightDirs;
@@ -92,15 +86,17 @@ function completeStatistics(statistics: Statistics) {
   statistics.same = statistics.differences ? false : true;
 }
 
-// Async diffsets are kept into recursive structures.
-// This method transforms them into one dimensional arrays.
-function rebuildAsyncDiffSet(asyncDiffSet: AsyncDiffSet) {
+/**
+ * Async diffsets are kept into recursive structures.
+ * This method transforms them into one dimensional arrays.
+ */
+function flattenAsyncDiffSet(asyncDiffSet: AsyncDiffSet): DiffSet {
   return [asyncDiffSet].flat(Infinity);
   //   asyncDiffSet.forEach(rawDiff => {
   //     if (!Array.isArray(rawDiff)) {
   //       diffSet.push(rawDiff);
   //     } else {
-  //       rebuildAsyncDiffSet(statistics, rawDiff, diffSet);
+  //       flattenAsyncDiffSet(statistics, rawDiff, diffSet);
   //     }
   //   });
 }

@@ -1,9 +1,9 @@
 /**
  * Collection of buffers to be shared between async processes.
  * Avoids allocating buffers each time async process starts.
- * bufSize - size of each buffer
- * bufNo - number of buffers
- * Caller has to make sure no more than bufNo async processes run simultaneously.
+ * size - size of each buffer
+ * count - number of buffers
+ * Caller has to make sure no more than buffer count async processes run simultaneously.
  */
 
 export interface BufferPoolEntry {
