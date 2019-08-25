@@ -9,16 +9,14 @@ import {
   getType,
   sameDate,
   cloneSymlinkCache,
-  filterEntry
+  filterEntry,
+  fastPathJoin
 } from "./utils";
 import { Entry, SymlinkCache, Options, Statistics, DifferenceType, AsyncDiffSet, DiffSet } from "./types";
 
 const statAsync = promisify(fs.stat);
 const readdirAsync = promisify(fs.readdir);
 const lstatAsync = promisify(fs.lstat);
-
-// TODO: migrate to path.join()?
-const PATH_SEP = pathUtils.sep;
 
 /**
  * Compares two directories asynchronously.
@@ -147,7 +145,7 @@ let same = undefined;
             entry1,
             entry2,
             level + 1,
-            relativePath + PATH_SEP + entry1.name,
+            fastPathJoin(relativePath, entry1.name),
             options,
             statistics,
             subDiffSet,
@@ -174,7 +172,7 @@ let same = undefined;
             entry1,
             undefined,
             level + 1,
-            relativePath + PATH_SEP + entry1.name,
+            fastPathJoin(relativePath, entry1.name),
             options,
             statistics,
             subDiffSet,
@@ -205,7 +203,7 @@ let same = undefined;
             undefined,
             entry2,
             level + 1,
-            relativePath + PATH_SEP + entry2.name,
+            fastPathJoin(relativePath, entry2.name),
             options,
             statistics,
             subDiffSet,
@@ -267,7 +265,7 @@ function getEntries(absolutePath: path, path: path, options, loopDetected: boole
   }
 }
 
-function buildEntries(absolutePath: string, path: string, rawEntries, options: Options) {
+function buildEntries(absolutePath: string, path: string, rawEntries: Entry[], options: Options) {
   var promisedEntries = [];
   rawEntries.forEach(function(entryName) {
     promisedEntries.push(buildEntry(absolutePath, path, entryName, options));
@@ -283,28 +281,23 @@ function buildEntries(absolutePath: string, path: string, rawEntries, options: O
   });
 }
 
-function buildEntry(absolutePath: string, path: string, entryName: string, options: Options) {
-  var entryAbsolutePath = absolutePath + PATH_SEP + entryName;
-  var entryPath = path + PATH_SEP + entryName;
-  return Promise.resolve(lstatAsync(entryAbsolutePath)).then(function(lstatEntry) {
-    var isSymlink = lstatEntry.isSymbolicLink();
-    var statPromise;
-    if (options.skipSymlinks && isSymlink) {
-      statPromise = Promise.resolve(undefined);
-    } else {
-      statPromise = statAsync(entryAbsolutePath);
-    }
-    return statPromise.then(function(statEntry) {
-      return {
-        name: entryName,
-        absolutePath: entryAbsolutePath,
-        path: entryPath,
-        stat: statEntry,
-        lstat: lstatEntry,
-        symlink: isSymlink
-      };
-    });
-  });
+async function buildEntry(absolutePath: string, path: string, entryName: string, options: Options) {
+  var entryAbsolutePath = fastPathJoin(absolutePath, entryName);
+  var entryPath = fastPathJoin(path, entryName);
+  
+  const lstatEntry = await lstatAsync(entryAbsolutePath)
+  const isSymlink = lstatEntry.isSymbolicLink();
+  const statPromise = options.skipSymlinks && isSymlink ? Promise.resolve(undefined) : statAsync(entryAbsolutePath);
+  const statEntry = await statPromise;
+
+  return {
+    name: entryName,
+    absolutePath: entryAbsolutePath,
+    path: entryPath,
+    stat: statEntry,
+    lstat: lstatEntry,
+    symlink: isSymlink
+  };
 }
 
 function doStats(
@@ -329,7 +322,7 @@ function doStats(
       statistics,
       diffSet
     );
-    
+
   same ? statistics.equal++ : statistics.distinct++;
   if (type1 === "file") {
     same ? statistics.equalFiles++ : statistics.distinctFiles++;

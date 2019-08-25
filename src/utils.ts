@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import minimatch from "minimatch";
+import path from "path";
 
 import { Entry, DifferenceType, Options, SymlinkCache, Statistics, SymlinkCacheGroup } from "./types";
 
@@ -9,6 +10,12 @@ import { Entry, DifferenceType, Options, SymlinkCache, Statistics, SymlinkCacheG
 // const structuredClone = (obj: any) => {
 //   return v8.deserialize(v8.serialize(obj));
 // };
+
+// TODO: libary previously used this over path.join, assuming for speed, but
+// need to test it
+export function fastPathJoin(root: string, entryName: string) {
+  return root + path.sep + entryName;
+}
 
 export function detectLoop(entry: Entry | undefined, symlinkCacheGroup: SymlinkCacheGroup) {
   if (entry && entry.symlink) {

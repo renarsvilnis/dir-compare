@@ -3,9 +3,9 @@ import util from "util";
 import pathUtils from "path";
 import { Writable } from "stream";
 import { CommanderStatic } from "commander";
+
 import { Statistics } from "./types";
 
-// TODO: migrate to path.join()?
 const PATH_SEP = pathUtils.sep;
 
 // Prints dir compare results.
