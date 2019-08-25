@@ -2,7 +2,7 @@ import * as fs from "fs";
 import minimatch from "minimatch";
 import path from "path";
 
-import { Entry, DifferenceType, Options, SymlinkCache, Statistics, SymlinkCacheGroup } from "./types";
+import { Entry, DifferenceType, SearchOptions, SymlinkCache, SymlinkCacheGroup } from "./types";
 
 // Insted of shallow copy
 // https://stackoverflow.com/a/10916838/1378261
@@ -38,24 +38,6 @@ export function symlinkCacheFactory(): SymlinkCache {
   return {
     dir1: {},
     dir2: {}
-  };
-}
-
-export function statisticsFactory(): Statistics {
-  return {
-    distinct: 0,
-    equal: 0,
-    left: 0,
-    right: 0,
-    distinctFiles: 0,
-    equalFiles: 0,
-    leftFiles: 0,
-    rightFiles: 0,
-    distinctDirs: 0,
-    equalDirs: 0,
-    leftDirs: 0,
-    rightDirs: 0,
-    same: undefined
   };
 }
 
@@ -115,7 +97,7 @@ export function match(fileName: string, pattern: string): boolean {
 /**
  * Filter entries by file name. Returns true if the file is to be processed.
  */
-export function filterEntry(entry: Entry, options: Options): boolean {
+export function filterEntry(entry: Entry, options: SearchOptions): boolean {
   if (entry.symlink && options.skipSymlinks) {
     return false;
   }

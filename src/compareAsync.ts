@@ -1,6 +1,7 @@
 import fs from "fs";
 import pathUtils from "path";
 import {promisify} from "bluebird";
+import path from 'path';
 
 import {
   detectLoop,
@@ -12,28 +13,31 @@ import {
   filterEntry,
   fastPathJoin
 } from "./utils";
-import { Entry, SymlinkCache, Options, Statistics, DifferenceType, AsyncDiffSet, DiffSet } from "./types";
+import { Entry, SymlinkCache, SearchOptions, Difference, DifferenceState } from "./types";
 
 const statAsync = promisify(fs.stat);
 const readdirAsync = promisify(fs.readdir);
 const lstatAsync = promisify(fs.lstat);
 
-// TODO: maybe do statistics afterwards on when each entry is built on a
-// callback, like on('start'), on('entry'), on('finish')
-
-/**
- * Compares two directories asynchronously.
- */
-export default async function compareAsync(
-  rootEntry1: Entry | undefined,
-  rootEntry2: Entry | undefined,
+interface CompareParams {
+  rootEntry1?: Entry,
+  rootEntry2?: Entry,
   level: number,
-  relativePath: string,
-  options: Options,
-  statistics: Statistics,
-  diffSet: AsyncDiffSet,
-  symlinkCache: SymlinkCache
-): Promise<Statistics> {
+  relativePath:  string,
+  searchOptions: SearchOptions,
+  symlinkCache: SymlinkCache,
+  onDifference: (difference: Difference) => void 
+}
+
+export default async function compareAsyncInternal({
+  rootEntry1,
+  rootEntry2,
+  level,
+  relativePath,
+  searchOptions,
+  symlinkCache,
+  onDifference
+}: CompareParams): Promise<void> {
   const loopDetected1 = detectLoop(rootEntry1, symlinkCache.dir1);
   const loopDetected2 = detectLoop(rootEntry2, symlinkCache.dir2);
 
@@ -51,8 +55,8 @@ export default async function compareAsync(
   const path2 = rootEntry2 ? rootEntry2.path : undefined;
 
   const entriesResult = await Promise.all([
-    getEntries(absolutePath1, path1, options, loopDetected1),
-    getEntries(absolutePath2, path2, options, loopDetected2)
+    getEntries(absolutePath1, path1, searchOptions, loopDetected1),
+    getEntries(absolutePath2, path2, searchOptions, loopDetected2)
   ]);
 
   const entries1 = entriesResult[0];
@@ -76,7 +80,7 @@ export default async function compareAsync(
     // compare entry name (-1, 0, 1)
     let cmp;
     if (i1 < entries1.length && i2 < entries2.length) {
-      cmp = options.ignoreCase ? compareEntryIgnoreCase(entry1, entry2) : compareEntryCaseSensitive(entry1, entry2);
+      cmp = searchOptions.ignoreCase ? compareEntryIgnoreCase(entry1, entry2) : compareEntryCaseSensitive(entry1, entry2);
       type1 = getType(fileStat1);
       type2 = getType(fileStat2);
     } else if (i1 < entries1.length) {
@@ -95,16 +99,14 @@ export default async function compareAsync(
       let samePromise = undefined;
 let same = undefined;
       if (type1 === "file") {
-        if (options.compareSize && fileStat1.size !== fileStat2.size) {
+        if (searchOptions.compareSize && fileStat1.size !== fileStat2.size) {
           same = false;
-        } else if (options.compareDate && !sameDate(fileStat1.mtime, fileStat2.mtime, options.dateTolerance)) {
+        } else if (searchOptions.compareDate && !sameDate(fileStat1.mtime, fileStat2.mtime, searchOptions.dateTolerance)) {
           same = false;
-        } else if (options.compareContent) {
-          var cmpFile = function(entry1, entry2, type1, type2) {
-              const subDiffSet: AsyncDiffSet = [];
-              diffSet.push(subDiffSet);
-            samePromise = options
-              .compareFile(p1, fileStat1, p2, fileStat2, options)
+        } else if (searchOptions.compareContent) {
+          const cmpFile = (entry1, entry2, type1, type2) => {
+              samePromise = searchOptions
+              .compareFile(p1, fileStat1, p2, fileStat2, searchOptions)
               .then((comparisonResult) => {
                 var same, error;
                 if (typeof comparisonResult === "boolean") {
@@ -120,7 +122,6 @@ let same = undefined;
                   error: error,
                   type1: type1,
                   type2: type2,
-                  diffSet: subDiffSet
                 };
               });
           };
@@ -132,86 +133,70 @@ let same = undefined;
         same = true;
       }
       if (same !== undefined) {
-        doStats(entry1, entry2, same, statistics, options, level, relativePath, diffSet, type1, type2);
+        // TODO: rewrite somewhere else
+        onDifference(createEntry(
+          entry1,
+          entry2,
+          same ? "equal" : "distinct",
+          level,
+          relativePath
+        ));
       } else {
         compareFilePromises.push(samePromise);
       }
 
       i1++;
       i2++;
-      if (!options.skipSubdirs && type1 === "directory") {
-          const subDiffSet:AsyncDiffSet = [];
-          diffSet.push(subDiffSet);
-
+      if (!searchOptions.skipSubdirs && type1 === "directory") {
         comparePromises.push(
-          compareAsync(
-            entry1,
-            entry2,
-            level + 1,
-            fastPathJoin(relativePath, entry1.name),
-            options,
-            statistics,
-            subDiffSet,
-            cloneSymlinkCache(symlinkCache)
+          compareAsyncInternal({
+            rootEntry1: entry1,
+            rootEntry2: entry2,
+            level: level + 1,
+            relativePath: fastPathJoin(relativePath, entry1.name),
+            searchOptions,
+            onDifference,
+            // TODO: why do i need clone it, maybe DeepReadonly<>?
+            symlinkCache: cloneSymlinkCache(symlinkCache),
           )
         );
       }
     } else if (cmp < 0) {
       // Right missing
-        options.resultBuilder(entry1, undefined, "left", level, relativePath, options, statistics, diffSet);
-      statistics.left++;
-      if (type1 === "file") {
-        statistics.leftFiles++;
-      } else {
-        statistics.leftDirs++;
-      }
-      i1++;
-      if (type1 === "directory" && !options.skipSubdirs) {
-          const subDiffSet:AsyncDiffSet = [];
-          diffSet.push(subDiffSet);
+      onDifference(createEntry(entry1, undefined, "left", level, relativePath));
 
+      i1++;
+      if (type1 === "directory" && !searchOptions.skipSubdirs) {
         comparePromises.push(
-          compareAsync(
-            entry1,
-            undefined,
-            level + 1,
-            fastPathJoin(relativePath, entry1.name),
-            options,
-            statistics,
-            subDiffSet,
-            cloneSymlinkCache(symlinkCache)
-          )
+          compareAsyncInternal({
+            rootEntry1: entry1,
+            rootEntry2: undefined,
+            level: level + 1,
+            relativePath: fastPathJoin(relativePath, entry1.name),
+            searchOptions,
+            onDifference,
+            // TODO: same issue as above
+            symlinkCache: cloneSymlinkCache(symlinkCache)
+          })
         );
       }
     } else {
       // Left missing
-        const  subDiffSet: AsyncDiffSet = [];
-        diffSet.push(subDiffSet);
-        options.resultBuilder(undefined, entry2, "right", level, relativePath, options, statistics, subDiffSet);
+      onDifference(createEntry(undefined, entry2, "right", level, relativePath));
         
-      statistics.right++;
-      if (type2 === "file") {
-        statistics.rightFiles++;
-      } else {
-        statistics.rightDirs++;
-      }
       i2++;
-      if (type2 === "directory" && !options.skipSubdirs) {
-        // TODO: make it "dry" by moving it into a function
-        const subDiffSet: AsyncDiffSet = [];
-          diffSet.push(subDiffSet);
-        }
+      if (type2 === "directory" && !searchOptions.skipSubdirs) {
         comparePromises.push(
-          compareAsync(
-            undefined,
-            entry2,
-            level + 1,
-            fastPathJoin(relativePath, entry2.name),
-            options,
-            statistics,
-            subDiffSet,
-            cloneSymlinkCache(symlinkCache)
-          )
+          compareAsyncInternal({
+            rootEntry1: undefined,
+            rootEntry2: entry2,
+            level: level + 1,
+            relativePath: fastPathJoin(relativePath, entry2.name),
+            searchOptions,
+            onDifference,
+            // TODO: same symlink issue as before
+            symlinkCache: cloneSymlinkCache(symlinkCache),
+          })
         );
       }
     }
@@ -224,19 +209,14 @@ let same = undefined;
       if (sameResult.error) {
         throw new Error(sameResult.error);
       }
-      
-      doStats(
+
+      onDifference(createEntry(
         sameResult.entry1,
         sameResult.entry2,
         sameResult.same,
-        statistics,
-        options,
         level,
-        relativePath,
-        sameResult.diffSet,
-        sameResult.type1,
-        sameResult.type2
-      );
+        relativePath
+      ));
     }
   });
 }
@@ -244,7 +224,7 @@ let same = undefined;
 /**
  * Returns the sorted list of entries in a directory.
  */
-function getEntries(absolutePath: string, path: string, options: Options, loopDetected: boolean): Promise<Entry[]> {
+function getEntries(absolutePath: string | undefined, path: string, options: SearchOptions, loopDetected: boolean): Promise<Entry[]> {
   if (!absolutePath || loopDetected) {
     return Promise.resolve([]);
   } else {
@@ -268,7 +248,7 @@ function getEntries(absolutePath: string, path: string, options: Options, loopDe
   }
 }
 
-function buildEntries(absolutePath: string, path: string, rawEntries: Entry[], options: Options) {
+function buildEntries(absolutePath: string, path: string, rawEntries: Entry[], options: SearchOptions) {
   var promisedEntries = [];
   rawEntries.forEach(function(entryName) {
     promisedEntries.push(buildEntry(absolutePath, path, entryName, options));
@@ -284,7 +264,7 @@ function buildEntries(absolutePath: string, path: string, rawEntries: Entry[], o
   });
 }
 
-async function buildEntry(absolutePath: string, path: string, entryName: string, options: Options) {
+async function buildEntry(absolutePath: string, path: string, entryName: string, options: SearchOptions) {
   var entryAbsolutePath = fastPathJoin(absolutePath, entryName);
   var entryPath = fastPathJoin(path, entryName);
   
@@ -303,33 +283,21 @@ async function buildEntry(absolutePath: string, path: string, entryName: string,
   };
 }
 
-function doStats(
-  entry1: Entry,
-  entry2: Entry,
-  same: boolean,
-  statistics: Statistics,
-  options: Options,
-  level: number,
-  relativePath: string,
-  diffSet: DiffSet,
-  type1: DifferenceType,
-  type2: DifferenceType
-) {
-    options.resultBuilder(
-      entry1,
-      entry2,
-      same ? "equal" : "distinct",
-      level,
-      relativePath,
-      options,
-      statistics,
-      diffSet
-    );
-
-  same ? statistics.equal++ : statistics.distinct++;
-  if (type1 === "file") {
-    same ? statistics.equalFiles++ : statistics.distinctFiles++;
-  } else {
-    same ? statistics.equalDirs++ : statistics.distinctDirs++;
-  }
-}
+const createEntry = (entry1: Entry | undefined, entry2: Entry | undefined, state: DifferenceState, level: number, relativePath: string) => ({
+  path1: entry1 ? path.dirname(entry1.path) : undefined,
+  path2: entry2 ? path.dirname(entry2.path) : undefined,
+  relativePath: relativePath,
+  name1: entry1 ? entry1.name : undefined,
+  name2: entry2 ? entry2.name : undefined,
+  state: state,
+  type1: getType(entry1 && entry1.stat),
+  type2: getType(entry2 && entry2.stat),
+  level: level,
+  size1: entry1 ? entry1.stat.size : undefined,
+  size2: entry2 ? entry2.stat.size : undefined,
+  // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
+  // date1: entry1 ? entry1.stat.mtime : undefined,
+  // date1: entry1 ? entry1.stat.mtime : undefined,
+  date1: entry2 ? entry2.stat.mtimeMs : undefined,
+  date2: entry2 ? entry2.stat.mtimeMs : undefined
+});

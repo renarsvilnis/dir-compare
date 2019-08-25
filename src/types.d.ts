@@ -2,7 +2,7 @@
 
 import * as fs from "fs";
 
-export function compare(path1: string, path2: string, options?: Partial<Options>): Promise<Statistics>;
+export function compare(path1: string, path2: string, options?: Partial<SearchOptions>): Promise<StatisticResults>;
 
 export type SymlinkCacheGroup = { [key: string]: boolean };
 export interface SymlinkCache {
@@ -16,39 +16,11 @@ export interface CreateEntryOptions {
   state: DifferenceState;
   level: number;
   relativePath: string;
-  options: Partial<Options>;
-  statistics: Statistics;
-  diffset: DiffSet;
+  options: Partial<SearchOptions>;
 }
 
-export type ResultBuilderFn = (
-  entry1: Entry | undefined,
-  entry2: Entry | undefined,
-  state: DifferenceState,
-  level: number,
-  relativePath: string,
-  options: Partial<Options>,
-  statistics: Statistics,
-  diffset: AsyncDiffSet
-) => void;
-
 export type DiffSet = Difference[];
-
-/**
- * Workaround to make the interface infinitly nestable
- * Reference: https://stackoverflow.com/a/45999529/1378261
- */
-type DiffSetItem = Difference[] | AsyncDiffSet;
-// TODO: rename "AsyncDiffSet" to "NestedDiffSet"
-export interface AsyncDiffSet extends Array<DiffSetItem> {}
-
-export interface Options {
-  // TODO: remove this wildcard or add InternalOptions interfaces for using inside of library
-  /**
-   * Properties to be used in various extension points ie. result builder.
-   */
-  // [key: string]: any;
-
+export interface SearchOptions {
   /**
    * Compares files by size. Defaults to 'false'.
    */
@@ -95,11 +67,6 @@ export interface Options {
   excludeFilter: string;
 
   /**
-   * Callback for constructing result - function (entry1, entry2, state, level, relativePath, options, statistics, diffSet). Called for each compared entry pair. Updates 'statistics' and 'diffSet'.
-   */
-  resultBuilder: ResultBuilderFn;
-
-  /**
    * File comparison handler.
    */
   compareFile: CompareFile;
@@ -108,6 +75,11 @@ export interface Options {
   // Only used for lineBasedFileCompare
   ignoreLineEnding: boolean;
   ignoreWhiteSpaces: boolean;
+}
+
+export interface Results {
+  statistics: StatisticResults;
+  differences: DiffSet;
 }
 
 export interface Entry {
@@ -152,13 +124,7 @@ export interface Entry {
  *      date2: modification date (stat.mtime)
  *      level: depth
  */
-export interface Statistics {
-  // TODO: remove this wildcard or add InternalOptions interfaces for using inside of library
-  /**
-   * Any property is allowed if default result builder is not used.
-   */
-  // [key: string]: any;
-
+export interface StatisticResults {
   /**
    * number of distinct entries.
    */
@@ -240,12 +206,18 @@ export interface Statistics {
   same: boolean;
 
   /**
-   * List of changes
+   * Total diffference count
    */
-  diffSet?: Difference[];
-
   total: number;
+
+  /**
+   * Subset of all differences that are files
+   */
   totalFiles: number;
+
+  /**
+   * Subset of all differences that are folders
+   */
   totalDirs: number;
 }
 
