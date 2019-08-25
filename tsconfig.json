@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "outDir": "build",
     "target": "es5",
     "module": "commonjs",
     "sourceMap": true,
@@ -28,9 +29,8 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
   },
-  "files": [
-    // "src/index.d.ts"
-  ],
+  // "files": [
+  // ],
   "include": [
     "tests/**/*",
     "src/**/*",

@@ -5,7 +5,6 @@ import Promise from "bluebird";
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
 import { closeFilesAsync } from "./common";
 import BufferPool, { BufferPoolEntry } from "../utils/BufferPool";
-import { Options } from "../types";
 
 const MAX_CONCURRENT_FILE_COMPARE = 8;
 const BUF_SIZE = 100000;
@@ -17,7 +16,7 @@ const bufferPool = new BufferPool(BUF_SIZE, MAX_CONCURRENT_FILE_COMPARE); // fdQ
 /**
  * Compares two files by content
  */
-export function defaultFileCompare(path1: string, stat1: Stats, path2: string, stat2: Stats, options: Options) {
+export function defaultFileCompare(path1: string, stat1: Stats, path2: string, stat2: Stats, options?: {}) {
   let fd1: number | undefined;
   let fd2: number | undefined;
   let bufferPair: BufferPoolEntry | undefined;

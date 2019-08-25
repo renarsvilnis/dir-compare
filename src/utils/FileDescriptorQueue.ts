@@ -2,6 +2,12 @@ import fs from "fs";
 
 import Queue from "./Queue";
 
+export interface FileDescriptorQueueItem {
+  path: string;
+  flags: string | number;
+  callback: (err: NodeJS.ErrnoException | null, fd: number) => void;
+}
+
 /**
  * Limits the number of concurrent file handlers.
  * Use it as a wrapper over fs.open() and fs.close().
@@ -15,13 +21,6 @@ import Queue from "./Queue";
  *  });
  *  As of node v7, calling fd.close without a callback is deprecated.
  */
-
-export interface FileDescriptorQueueItem {
-  path: string;
-  flags: string | number;
-  callback: (err: NodeJS.ErrnoException | null, fd: number) => void;
-}
-
 export default class FileDescriptorQueue {
   pendingJobs = new Queue<FileDescriptorQueueItem>();
   activeCount = 0;

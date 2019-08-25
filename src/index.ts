@@ -14,7 +14,7 @@ import { Options, Statistics, Difference } from "./types";
 type DiffSet = Difference[];
 type AsyncDiffSet = (DiffSet | Difference)[];
 
-export const DefaultOptions = {
+const DefaultOptions = {
   compareSize: false,
   compareDate: false,
   dateTolerance: 1000,

@@ -1,7 +1,6 @@
-import { Options } from "./types";
-var compareAsync = require('../index').compare;
-var lineAsyncCompare = require('../index').fileCompareHandlers.lineBasedFileCompare.compareAsync
-var lineSyncCompare =  require('../index').fileCompareHandlers.lineBasedFileCompare.compareSync
+import { Options } from "../src/types";
+var compareAsync = require('../index').compareAsync;
+var lineCompare = require('../index').fileCompareHandlers.lineBasedFileCompare
 var util = require('util');
 
 export interface DisplayOptions {
@@ -49,7 +48,7 @@ export interface Test {
     runAsync: () => Promise<string>
 }
 
-export function getTests(testDirPath){
+export function getTests(testDirPath: string){
     var res : Partial<Test>[] = [
              {
                  name: 'test001_1', path1: 'd1', path2: 'd2',
@@ -575,8 +574,7 @@ export function getTests(testDirPath){
                  description: 'should ignore line endings',
                  options: {
                      compareContent: true,
-                     compareFileSync: lineSyncCompare,
-                     compareFileAsync: lineAsyncCompare,
+                     compareFile: lineCompare,
                      ignoreLineEnding: true,
                  },
                  displayOptions: {nocolors: true},
@@ -587,8 +585,7 @@ export function getTests(testDirPath){
                  description: 'should not ignore line endings',
                  options: {
                      compareContent: true,
-                     compareFileSync: lineSyncCompare,
-                     compareFileAsync: lineAsyncCompare,
+                     compareFile: lineCompare,
                      ignoreLineEnding: false,
                  },
                  displayOptions: {nocolors: true},
@@ -599,8 +596,7 @@ export function getTests(testDirPath){
                  description: 'should ignore white spaces',
                  options: {
                      compareContent: true,
-                     compareFileSync: lineSyncCompare,
-                     compareFileAsync: lineAsyncCompare,
+                     compareFile: lineCompare,
                      ignoreWhiteSpaces: true
                  },
                  displayOptions: {nocolors: true},
@@ -611,8 +607,7 @@ export function getTests(testDirPath){
                  description: 'should ignore white spaces and line endings',
                  options: {
                      compareContent: true,
-                     compareFileSync: lineSyncCompare,
-                     compareFileAsync: lineAsyncCompare,
+                     compareFile: lineCompare,
                      ignoreLineEnding: true,
                      ignoreWhiteSpaces: true
                  },
@@ -624,8 +619,7 @@ export function getTests(testDirPath){
                  description: 'should not ignore white spaces',
                  options: {
                      compareContent: true,
-                     compareFileSync: lineSyncCompare,
-                     compareFileAsync: lineAsyncCompare,
+                     compareFile: lineCompare,
                      ignoreWhiteSpaces: false
                  },
                  displayOptions: {nocolors: true},
@@ -636,8 +630,7 @@ export function getTests(testDirPath){
                  description: 'should ignore mixed white spaces',
                  options: {
                      compareContent: true,
-                     compareFileSync: lineSyncCompare,
-                     compareFileAsync: lineAsyncCompare,
+                     compareFile: lineCompare,
                      ignoreWhiteSpaces: true
                  },
                  displayOptions: {nocolors: true},
@@ -648,8 +641,7 @@ export function getTests(testDirPath){
                  description: 'should ignore mixed white spaces',
                  options: {
                      compareContent: true,
-                     compareFileSync: lineSyncCompare,
-                     compareFileAsync: lineAsyncCompare,
+                     compareFile: lineCompare,
                      ignoreWhiteSpaces: true
                  },
                  displayOptions: {nocolors: true},
@@ -664,7 +656,7 @@ export function getTests(testDirPath){
                  options: {},
                  onlyLibrary: true,
                  withRelativePath: true,
-                 print: function(res, writer, program){printRelativePathResult(res, testDirPath, writer)}
+                 print: printRelativePathResult
              },
              {
                  name: 'test012_1', path1: 'd1/A6/../../d1', path2: 'd2',
@@ -672,7 +664,7 @@ export function getTests(testDirPath){
                  options: {},
                  onlyLibrary: true,
                  withRelativePath: false,
-                 print: function(res, writer, program){printRelativePathResult(res, testDirPath, writer)}
+                 print: printRelativePathResult
              },
              {
                  name: 'test012_2', path1: testDirPath+'/d1', path2: 'd2',
@@ -680,15 +672,15 @@ export function getTests(testDirPath){
                  options: {},
                  onlyLibrary: true,
                  withRelativePath: true,
-                 print: function(res, writer, program){printRelativePathResult(res, testDirPath, writer)}
+                 print: printRelativePathResult
              },
          ];
          return res;
 }
 
 
-var printRelativePathResult = function(res, testDirPath, writer) {
-    var result = res.diffSet.map(function(diff){
+function printRelativePathResult(res, testDirPath: string, writer) {
+    var result = res.diffSet.map((diff)=> {
         return util.format('path1: %s, path2: %s',
         diff.path1, diff.path2)});
     result = JSON.stringify(result)
