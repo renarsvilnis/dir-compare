@@ -1,4 +1,4 @@
-import { Options } from "..";
+import { Options } from "./types";
 var compareAsync = require('../index').compare;
 var lineAsyncCompare = require('../index').fileCompareHandlers.lineBasedFileCompare.compareAsync
 var lineSyncCompare =  require('../index').fileCompareHandlers.lineBasedFileCompare.compareSync
