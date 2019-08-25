@@ -39,12 +39,13 @@ export default async function compareAsyncInternal({
   onDifference
 }: CompareParams): Promise<void> {
   const loopDetected1 = detectLoop(rootEntry1, symlinkCache.dir1);
-  const loopDetected2 = detectLoop(rootEntry2, symlinkCache.dir2);
 
   if (rootEntry1 && !loopDetected1) {
     const symlinkCachePath1 = rootEntry1.symlink ? fs.realpathSync(rootEntry1.absolutePath) : rootEntry1.absolutePath;
     symlinkCache.dir1[symlinkCachePath1] = true;
   }
+
+  const loopDetected2 = detectLoop(rootEntry2, symlinkCache.dir2);
   if (rootEntry2 && !loopDetected2) {
     const symlinkCachePath2 = rootEntry2.symlink ? fs.realpathSync(rootEntry2.absolutePath) : rootEntry2.absolutePath;
     symlinkCache.dir2[symlinkCachePath2] = true;
