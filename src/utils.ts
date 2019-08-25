@@ -2,7 +2,7 @@ import * as fs from "fs";
 import minimatch from "minimatch";
 import path from "path";
 
-import { Entry, DifferenceType, SearchOptions, SymlinkCache, SymlinkCacheGroup } from "./types";
+import { Entry, DifferenceType, SearchOptions, SymlinkCache, SymlinkCacheGroup, CompareResult } from "./types";
 
 // Insted of shallow copy
 // https://stackoverflow.com/a/10916838/1378261
@@ -34,21 +34,21 @@ export function cloneSymlinkCache(symlinkCache: SymlinkCache) {
   };
 }
 
-export function symlinkCacheFactory(): SymlinkCache {
-  return {
-    dir1: {},
-    dir2: {}
-  };
-}
-
 // TODO: Maybe use different method of doing it, see if it requires copying
 // methods aswell as propterties - https://thecodebarbarian.com/object-assign-vs-object-spread.html
-export function shallowClone(obj) {
+function shallowClone<T>(obj: T): T {
   var cloned = {};
   Object.keys(obj).forEach(function(key) {
     cloned[key] = obj[key];
   });
   return cloned;
+}
+
+export function symlinkCacheFactory(): SymlinkCache {
+  return {
+    dir1: {},
+    dir2: {}
+  };
 }
 
 export function entryFactory(absolutePath: string, path: string, name: string): Entry {
@@ -66,17 +66,13 @@ export function entryFactory(absolutePath: string, path: string, name: string): 
 }
 
 /**
- * One of 'missing','file','directory'
+ * One of 'file','directory'
  */
-export function getType(fileStat?: fs.Stats): DifferenceType {
-  if (fileStat) {
-    if (fileStat.isDirectory()) {
-      return "directory";
-    } else {
-      return "file";
-    }
+export function getType(fileStat: fs.Stats): DifferenceType {
+  if (fileStat.isDirectory()) {
+    return "directory";
   } else {
-    return "missing";
+    return "file";
   }
 }
 /**
@@ -115,7 +111,7 @@ export function filterEntry(entry: Entry, options: SearchOptions): boolean {
 /**
  * Comparator for directory entries sorting.
  */
-export function compareEntryCaseSensitive(a: Entry, b: Entry): 0 | -1 | 1 {
+export function compareEntryCaseSensitive(a: Entry, b: Entry): CompareResult {
   if (a.stat.isDirectory() && b.stat.isFile()) {
     return -1;
   } else if (a.stat.isFile() && b.stat.isDirectory()) {
@@ -130,7 +126,7 @@ export function compareEntryCaseSensitive(a: Entry, b: Entry): 0 | -1 | 1 {
 /**
  * Comparator for directory entries sorting.
  */
-export function compareEntryIgnoreCase(a: Entry, b: Entry): 0 | -1 | 1 {
+export function compareEntryIgnoreCase(a: Entry, b: Entry): CompareResult {
   if (a.stat.isDirectory() && b.stat.isFile()) {
     return -1;
   } else if (a.stat.isFile() && b.stat.isDirectory()) {

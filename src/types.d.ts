@@ -19,7 +19,8 @@ export interface CreateEntryOptions {
   options: Partial<SearchOptions>;
 }
 
-export type DiffSet = Difference[];
+export type CompareResult = 0 | -1 | 1;
+
 export interface SearchOptions {
   /**
    * Compares files by size. Defaults to 'false'.
@@ -79,7 +80,7 @@ export interface SearchOptions {
 
 export interface Results {
   statistics: StatisticResults;
-  differences: DiffSet;
+  differences: Difference[];
 }
 
 export interface Entry {
@@ -221,9 +222,6 @@ export interface StatisticResults {
   totalDirs: number;
 }
 
-// TODO: implement
-// DifferenceDistinct | DifferenceLeft | DifferenceRight
-
 export type DifferenceState = "equal" | "left" | "right" | "distinct";
 export type DifferenceType = "missing" | "file" | "directory";
 export interface DifferenceEqual {
@@ -348,5 +346,5 @@ export type CompareFile = (
   stat1: fs.Stats,
   path2: string,
   stat2: fs.Stats,
-  options: Partial<Options>
+  options: Partial<SearchOptions>
 ) => Promise<boolean>;

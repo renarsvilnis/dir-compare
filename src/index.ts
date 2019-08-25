@@ -10,7 +10,7 @@ import Statistics from "./utils/Statistics";
 
 const realpathAsync = promisify(fs.realpath);
 
-import { SearchOptions, DiffSet, Difference, Results } from "./types";
+import { SearchOptions, Difference, Results } from "./types";
 
 export async function compareAsync(path1: string, path2: string, options: SearchOptions): Promise<Results> {
   const [realPath1, realPath2] = await Promise.all([realpathAsync(path1), realpathAsync(path2)]);
@@ -22,7 +22,7 @@ export async function compareAsync(path1: string, path2: string, options: Search
   const statistics = new Statistics();
   options = prepareOptions(options);
 
-  const differences: DiffSet = [];
+  const differences: Difference[] = [];
 
   const symlinkCache = symlinkCacheFactory();
 
