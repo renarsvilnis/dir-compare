@@ -2,7 +2,7 @@ import * as fs from "fs";
 import minimatch from "minimatch";
 import path from "path";
 
-import { Entry, DifferenceType, SearchOptions, SymlinkCache, SymlinkCacheGroup, CompareResult } from "./types";
+import { Entry, SearchOptions, SymlinkCache, SymlinkCacheGroup, CompareResult } from "./types";
 
 // Insted of shallow copy
 // https://stackoverflow.com/a/10916838/1378261

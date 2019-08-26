@@ -1,7 +1,12 @@
 import fs from "fs";
 import pathUtils from "path";
 import {promisify} from "util";
-import path from 'path';
+import {
+  createLeftOnlyDifference,
+createRightOnlyDifference,
+createEqualDifference,
+createDistinctDifference
+} from './utils/createDifference';
 
 import {
   detectLoop,
@@ -13,7 +18,7 @@ import {
   filterEntry,
   fastPathJoin
 } from "./utils";
-import { Entry, SymlinkCache, SearchOptions, Difference, CompareResult, DifferenceType, DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual } from "./types";
+import { Entry, SymlinkCache, SearchOptions, Difference, CompareResult, DifferenceType} from "./types";
 
 const statAsync = promisify(fs.stat);
 const readdirAsync = promisify(fs.readdir);
@@ -83,16 +88,16 @@ export default async function compareAsyncInternal({
 
     let cmp: CompareResult;
     if (i1 < entries1LengthCache && i2 < entries2LengthCache) {
-      type1 = getType(fileStat1);
-      type2 = getType(fileStat2);
+      type1 = fileStat1 ? getType(fileStat1) : 'missing';
+      type2 = fileStat2 ? getType(fileStat2) : 'missing';
       cmp = searchOptions.ignoreCase ? compareEntryIgnoreCase(entry1, entry2) : compareEntryCaseSensitive(entry1, entry2);
     } else if (i1 < entries1LengthCache) {
-      type1 = getType(fileStat1);
+      type1 = fileStat1 ? getType(fileStat1) : 'missing';
       type2 = 'missing';
       cmp = -1;
     } else {
       type1 = 'missing';
-      type2 = getType(fileStat2);
+      type2 = fileStat2 ? getType(fileStat2) : 'missing';
       cmp = 1;
     }
 
@@ -137,7 +142,7 @@ export default async function compareAsyncInternal({
         same = true;
       }
       if (same !== undefined) {
-        onDifference(same ? createEqualEntry(entry1, entry2, level, relativePath) : createDistinctEntry(entry1, entry2, level, relativePath))
+        onDifference(same ? createEqualDifference(entry1, entry2, level, relativePath) : createDistinctDifference(entry1, entry2, level, relativePath))
       } else {
         compareFilePromises.push(samePromise);
       }
@@ -160,7 +165,7 @@ export default async function compareAsyncInternal({
       }
     } else if (cmp < 0) {
       // Right missing
-      onDifference(createLeftOnlyEntry(entry1, level, relativePath));
+      onDifference(createLeftOnlyDifference(entry1, level, relativePath));
 
       i1++;
       if (!searchOptions.skipSubdirs && type1 === "directory") {
@@ -179,7 +184,7 @@ export default async function compareAsyncInternal({
       }
     } else {
       // Left missing
-      onDifference(createRightOnlyEntry(entry2, level, relativePath));
+      onDifference(createRightOnlyDifference(entry2, level, relativePath));
         
       i2++;
       if (!searchOptions.skipSubdirs && type2 === "directory") {
@@ -269,73 +274,3 @@ async function buildEntry(absolutePath: string, path: string, entryName: string,
     symlink: isSymlink
   };
 }
-
-const createLeftOnlyEntry = (entry1: Entry, level: number, relativePath: string): DifferenceLeft => ({
-  path1: path.dirname(entry1.path),
-  path2: undefined,
-  relativePath: relativePath,
-  name1: entry1.name,
-  name2: undefined,
-  state: "left",
-  type1: getType(entry1.stat),
-  type2: "missing",
-  size1: entry1.stat.size,
-  size2: undefined,
-  // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-  date1: entry1.stat.mtimeMs,
-  date2: undefined,
-  level
-})
-
-
-const createRightOnlyEntry = (entry2: Entry, level: number, relativePath: string): DifferenceRight => ({
-  path1: undefined,
-  path2: path.dirname(entry2.path),
-  relativePath: relativePath,
-  name1: undefined,
-  name2: entry2.name,
-  state: "right",
-  type1: "missing",
-  type2: getType(entry2.stat),
-  size1: undefined,
-  size2: entry2.stat.size,
-  date1: undefined,
-  // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-  date2: entry2.stat.mtimeMs,
-  level
-})
-
-
-const createEqualEntry = (entry1: Entry, entry2: Entry, level: number, relativePath: string): DifferenceEqual => ({
-  path1: path.dirname(entry1.path),
-  path2: path.dirname(entry2.path),
-  relativePath,
-  name1: entry1.name,
-  name2: entry2.name,
-  state: "equal",
-  type1: getType(entry1.stat),
-  type2: getType(entry2.stat),
-  size1: entry1.stat.size,
-  size2: entry2.stat.size,
-  // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-  date1: entry1.stat.mtimeMs,
-  date2: entry2.stat.mtimeMs,
-  level,
-})
-
-const createDistinctEntry = (entry1: Entry, entry2: Entry, level: number, relativePath: string): DifferenceDistinct => ({
-  path1: path.dirname(entry1.path),
-  path2: path.dirname(entry2.path),
-  relativePath,
-  name1: entry1.name,
-  name2: entry2.name,
-  state: "distinct",
-  type1: getType(entry1.stat),
-  type2: getType(entry2.stat),
-  size1: entry1.stat.size,
-  size2: entry2.stat.size,
-  // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-  date1: entry1.stat.mtimeMs,
-  date2: entry2.stat.mtimeMs,
-  level,
-})

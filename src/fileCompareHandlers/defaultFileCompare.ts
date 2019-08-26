@@ -1,6 +1,8 @@
 import { Stats } from "fs";
 import bufferEqual from "buffer-equal";
 import Promise from "bluebird";
+import fs from "fs";
+import { promisify } from "util";
 
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
 import { closeFilesAsync } from "./common";
@@ -9,7 +11,8 @@ import BufferPool, { BufferPoolEntry } from "../utils/BufferPool";
 const MAX_CONCURRENT_FILE_COMPARE = 8;
 const BUF_SIZE = 100000;
 const fdQueue = new FileDescriptorQueue(MAX_CONCURRENT_FILE_COMPARE * 2);
-const wrapper = require("./common").wrapper(fdQueue);
+
+const readAsync = promisify(fs.read);
 
 const bufferPool = new BufferPool(BUF_SIZE, MAX_CONCURRENT_FILE_COMPARE); // fdQueue guarantees there will be no more than MAX_CONCURRENT_FILE_COMPARE async processes accessing the buffers concurrently
 
@@ -21,32 +24,29 @@ export default function defaultFileCompare(path1: string, stat1: Stats, path2: s
   let fd2: number | undefined;
   let bufferPair: BufferPoolEntry | undefined;
 
-  return Promise.all([wrapper.open(path1, "r"), wrapper.open(path2, "r")])
-    .then(function(fds) {
+  return Promise.all([fdQueue.open(path1, "r"), fdQueue.open(path2, "r")])
+    .then(function([fd1, fd2]) {
       bufferPair = bufferPool.allocateBuffers();
-      fd1 = fds[0];
-      fd2 = fds[1];
       const buf1 = bufferPair.buf1;
       const buf2 = bufferPair.buf2;
       // let progress = 0;
       const compareAsyncInternal = (): Promise<boolean> => {
-        return Promise.all([
-          wrapper.read(fd1, buf1, 0, BUF_SIZE, null),
-          wrapper.read(fd2, buf2, 0, BUF_SIZE, null)
-        ]).then(function(bufferSizes) {
-          const size1 = bufferSizes[0];
-          const size2 = bufferSizes[1];
-          if (size1 !== size2) {
-            return false;
-          } else if (size1 === 0) {
-            // End of file reached
-            return true;
-          } else if (!compareBuffers(buf1, buf2, size1)) {
-            return false;
-          } else {
-            return compareAsyncInternal();
+        return Promise.all([readAsync(fd1, buf1, 0, BUF_SIZE, null), readAsync(fd2, buf2, 0, BUF_SIZE, null)]).then(
+          function(bufferSizes) {
+            const size1 = bufferSizes[0];
+            const size2 = bufferSizes[1];
+            if (size1 !== size2) {
+              return false;
+            } else if (size1 === 0) {
+              // End of file reached
+              return true;
+            } else if (!compareBuffers(buf1, buf2, size1)) {
+              return false;
+            } else {
+              return compareAsyncInternal();
+            }
           }
-        });
+        );
       };
       return compareAsyncInternal();
     })

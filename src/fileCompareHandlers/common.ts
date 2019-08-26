@@ -1,13 +1,4 @@
-import fs from "fs";
-import Promise from "bluebird";
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
-
-export function wrapper(fdQueue: FileDescriptorQueue) {
-  return {
-    open: Promise.promisify(fdQueue.open),
-    read: Promise.promisify(fs.read)
-  };
-}
 
 export function closeFilesAsync(fd1: number | undefined, fd2: number | undefined, fdQueue: FileDescriptorQueue) {
   if (fd1) {

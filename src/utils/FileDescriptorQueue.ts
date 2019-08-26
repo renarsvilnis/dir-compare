@@ -1,6 +1,10 @@
 import fs from "fs";
+import { promisify } from "util";
 
 import Queue from "./Queue";
+
+// const fsOpenAsync = promisify(fs.open);
+const fsCloseAsync = promisify(fs.close);
 
 export interface FileDescriptorQueueItem {
   path: string;
@@ -38,14 +42,29 @@ export default class FileDescriptorQueue {
     }
   }
 
-  public open(item: FileDescriptorQueueItem) {
-    this.pendingJobs.enqueue(item);
-    this.process();
+  public open(path: string, flags: string | number): Promise<number> {
+    return new Promise((resolve, reject) => {
+      this.pendingJobs.enqueue({
+        path,
+        flags,
+        callback: (err, fd) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(fd);
+          }
+        }
+      });
+
+      // Try to process this item or I queue already full, process other results
+      this.process();
+    });
   }
 
-  public close(fd: number, callback: (err: NodeJS.ErrnoException | null) => void) {
+  public async close(fd: number): Promise<void> {
     this.activeCount--;
-    fs.close(fd, callback);
+    await fsCloseAsync(fd);
+    // Process next queue items
     this.process();
   }
 }
