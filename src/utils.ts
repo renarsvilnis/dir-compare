@@ -29,19 +29,9 @@ export function detectLoop(entry: Entry | undefined, symlinkCacheGroup: SymlinkC
 
 export function cloneSymlinkCache(symlinkCache: SymlinkCache) {
   return {
-    dir1: shallowClone(symlinkCache.dir1),
-    dir2: shallowClone(symlinkCache.dir2)
+    dir1: { ...symlinkCache.dir1 },
+    dir2: { ...symlinkCache.dir2 }
   };
-}
-
-// TODO: Maybe use different method of doing it, see if it requires copying
-// methods aswell as propterties - https://thecodebarbarian.com/object-assign-vs-object-spread.html
-function shallowClone<T>(obj: T): T {
-  const cloned = {};
-  Object.keys(obj).forEach(function(key) {
-    cloned[key] = obj[key];
-  });
-  return cloned;
 }
 
 export function symlinkCacheFactory(): SymlinkCache {
@@ -52,6 +42,7 @@ export function symlinkCacheFactory(): SymlinkCache {
 }
 
 export function entryFactory(absolutePath: string, path: string, name: string): Entry {
+  // TODO: make it async?
   const statEntry = fs.statSync(absolutePath);
   const lstatEntry = fs.lstatSync(absolutePath);
   const isSymlink = lstatEntry.isSymbolicLink();

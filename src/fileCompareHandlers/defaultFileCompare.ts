@@ -1,11 +1,9 @@
 import { Stats } from "fs";
 import bufferEqual from "buffer-equal";
-import Promise from "bluebird";
 import fs from "fs";
 import { promisify } from "util";
 
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
-import { closeFilesAsync } from "./common";
 import BufferPool, { BufferPoolEntry } from "../utils/BufferPool";
 
 const MAX_CONCURRENT_FILE_COMPARE = 8;
@@ -25,16 +23,14 @@ export default function defaultFileCompare(path1: string, stat1: Stats, path2: s
   let bufferPair: BufferPoolEntry | undefined;
 
   return Promise.all([fdQueue.open(path1, "r"), fdQueue.open(path2, "r")])
-    .then(function([fd1, fd2]) {
+    .then(([fd1, fd2]) => {
       bufferPair = bufferPool.allocateBuffers();
       const buf1 = bufferPair.buf1;
       const buf2 = bufferPair.buf2;
       // let progress = 0;
       const compareAsyncInternal = (): Promise<boolean> => {
         return Promise.all([readAsync(fd1, buf1, 0, BUF_SIZE, null), readAsync(fd2, buf2, 0, BUF_SIZE, null)]).then(
-          function(bufferSizes) {
-            const size1 = bufferSizes[0];
-            const size2 = bufferSizes[1];
+          ([size1, size2]) => {
             if (size1 !== size2) {
               return false;
             } else if (size1 === 0) {
@@ -50,8 +46,11 @@ export default function defaultFileCompare(path1: string, stat1: Stats, path2: s
       };
       return compareAsyncInternal();
     })
-    .finally(function() {
-      closeFilesAsync(fd1, fd2, fdQueue);
+    .finally(() => {
+      // NOTE: don't wait .close() to resolve for results
+      fd1 && fdQueue.close(fd1);
+      fd2 && fdQueue.close(fd2);
+
       if (bufferPair) {
         BufferPool.freeBuffers(bufferPair);
       }

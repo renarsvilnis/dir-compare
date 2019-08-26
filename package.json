@@ -14,7 +14,6 @@
     "folder"
   ],
   "dependencies": {
-    "bluebird": "3.5.5",
     "buffer-equal": "1.0.0",
     "colors": "1.3.3",
     "commander": "2.20.0",

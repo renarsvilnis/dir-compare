@@ -3,13 +3,11 @@
  * line endings and white space differencies.
  */
 import { Stats } from "fs";
-import Promise from "bluebird";
 import fs from "fs";
 import { promisify } from "util";
 
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
 import BufferPool from "../utils/BufferPool";
-import { closeFilesAsync } from "./common";
 import { BufferPoolEntry } from "../utils/BufferPool";
 
 const readAsync = promisify(fs.read);
@@ -35,7 +33,7 @@ export default function lineBasedFileCompare(
   let fd2: number;
   let bufferPair: BufferPoolEntry | undefined;
   return Promise.all([fdQueue.open(path1, "r"), fdQueue.open(path2, "r")])
-    .then(function([fd1, fd2]) {
+    .then(([fd1, fd2]) => {
       bufferPair = bufferPool.allocateBuffers();
       const buf1 = bufferPair.buf1;
       const buf2 = bufferPair.buf2;
@@ -44,9 +42,7 @@ export default function lineBasedFileCompare(
       let last2 = "";
       const compareAsyncInternal = (): Promise<boolean> => {
         return Promise.all([readAsync(fd1, buf1, 0, BUF_SIZE, null), readAsync(fd2, buf2, 0, BUF_SIZE, null)]).then(
-          sizes => {
-            const size1 = sizes[0];
-            const size2 = sizes[1];
+          ([size1, size2]) => {
             const chunk1 = buf1.toString("utf8", 0, size1);
             const chunk2 = buf2.toString("utf8", 0, size2);
             const lines1 = (last1 + chunk1).split(/\n/);
@@ -69,8 +65,11 @@ export default function lineBasedFileCompare(
       };
       return compareAsyncInternal();
     })
-    .finally(function() {
-      closeFilesAsync(fd1, fd2, fdQueue);
+    .finally(() => {
+      // NOTE: don't wait .close() to resolve for results
+      fd1 && fdQueue.close(fd1);
+      fd2 && fdQueue.close(fd2);
+
       if (bufferPair) {
         BufferPool.freeBuffers(bufferPair);
       }
