@@ -20,8 +20,8 @@ export default class BufferPool {
 
     // TODO: why was it originially wrapped in a function? That doesn't make
     // sense
-    var createAsyncBuffers = () => {
-      for (var i = 0; i < count; i++) {
+    const createAsyncBuffers = () => {
+      for (let i = 0; i < count; i++) {
         this.bufferPool.push({
           buf1: Buffer.alloc(size),
           buf2: Buffer.alloc(size),
@@ -33,7 +33,7 @@ export default class BufferPool {
   }
 
   allocateBuffers() {
-    for (var i = 0, l = this.bufferPool.length; i < l; i++) {
+    for (let i = 0, l = this.bufferPool.length; i < l; i++) {
       const bufferPair = this.bufferPool[i];
       if (!bufferPair.busy) {
         bufferPair.busy = true;

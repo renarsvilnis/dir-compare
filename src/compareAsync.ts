@@ -13,7 +13,7 @@ import {
   filterEntry,
   fastPathJoin
 } from "./utils";
-import { Entry, SymlinkCache, SearchOptions, Difference, DifferenceState, CompareResult, DifferenceType, DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual } from "./types";
+import { Entry, SymlinkCache, SearchOptions, Difference, CompareResult, DifferenceType, DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual } from "./types";
 
 const statAsync = promisify(fs.stat);
 const readdirAsync = promisify(fs.readdir);
@@ -39,7 +39,6 @@ export default async function compareAsyncInternal({
   onDifference
 }: CompareParams): Promise<void> {
   const loopDetected1 = detectLoop(rootEntry1, symlinkCache.dir1);
-
   if (rootEntry1 && !loopDetected1) {
     const symlinkCachePath1 = rootEntry1.symlink ? fs.realpathSync(rootEntry1.absolutePath) : rootEntry1.absolutePath;
     symlinkCache.dir1[symlinkCachePath1] = true;
@@ -50,24 +49,29 @@ export default async function compareAsyncInternal({
     const symlinkCachePath2 = rootEntry2.symlink ? fs.realpathSync(rootEntry2.absolutePath) : rootEntry2.absolutePath;
     symlinkCache.dir2[symlinkCachePath2] = true;
   }
+
   const absolutePath1 = rootEntry1 ? rootEntry1.absolutePath : undefined;
   const absolutePath2 = rootEntry2 ? rootEntry2.absolutePath : undefined;
   const path1 = rootEntry1 ? rootEntry1.path : undefined;
   const path2 = rootEntry2 ? rootEntry2.path : undefined;
 
-  const entriesResult = await Promise.all([
+  const [entries1, entries2] = await Promise.all([
     getEntries(absolutePath1, path1, searchOptions, loopDetected1),
     getEntries(absolutePath2, path2, searchOptions, loopDetected2)
   ]);
 
-  const entries1 = entriesResult[0];
-  const entries2 = entriesResult[1];
-  let i1 = 0;
-  let i2 = 0;
   const comparePromises = [];
   const compareFilePromises = [];
 
-  while (i1 < entries1.length || i2 < entries2.length) {
+  // TODO: add documentation
+  let i1 = 0;
+  let i2 = 0;
+
+  // Cache entries length property as their lenght is static
+  const entries1LengthCache = entries1.length;
+  const entries2LengthCache = entries2.length;
+
+  while (i1 < entries1LengthCache || i2 < entries2LengthCache) {
     const entry1 = entries1[i1];
     const entry2 = entries2[i2];
     const p1 = entry1 ? entry1.absolutePath : undefined;
@@ -78,11 +82,11 @@ export default async function compareAsyncInternal({
     let type2: DifferenceType;
 
     let cmp: CompareResult;
-    if (i1 < entries1.length && i2 < entries2.length) {
-      cmp = searchOptions.ignoreCase ? compareEntryIgnoreCase(entry1, entry2) : compareEntryCaseSensitive(entry1, entry2);
+    if (i1 < entries1LengthCache && i2 < entries2LengthCache) {
       type1 = getType(fileStat1);
       type2 = getType(fileStat2);
-    } else if (i1 < entries1.length) {
+      cmp = searchOptions.ignoreCase ? compareEntryIgnoreCase(entry1, entry2) : compareEntryCaseSensitive(entry1, entry2);
+    } else if (i1 < entries1LengthCache) {
       type1 = getType(fileStat1);
       type2 = 'missing';
       cmp = -1;
@@ -108,7 +112,7 @@ export default async function compareAsyncInternal({
             samePromise = searchOptions
               .compareFile(p1, fileStat1, p2, fileStat2, searchOptions)
               .then((comparisonResult) => {
-                var same, error;
+                const same, error;
                 if (typeof comparisonResult === "boolean") {
                   same = comparisonResult;
                 } else {
@@ -159,7 +163,7 @@ export default async function compareAsyncInternal({
       onDifference(createLeftOnlyEntry(entry1, level, relativePath));
 
       i1++;
-      if (type1 === "directory" && !searchOptions.skipSubdirs) {
+      if (!searchOptions.skipSubdirs && type1 === "directory") {
         comparePromises.push(
           compareAsyncInternal({
             rootEntry1: entry1,
@@ -178,7 +182,7 @@ export default async function compareAsyncInternal({
       onDifference(createRightOnlyEntry(entry2, level, relativePath));
         
       i2++;
-      if (type2 === "directory" && !searchOptions.skipSubdirs) {
+      if (!searchOptions.skipSubdirs && type2 === "directory") {
         comparePromises.push(
           compareAsyncInternal({
             rootEntry1: undefined,
@@ -217,60 +221,51 @@ export default async function compareAsyncInternal({
 /**
  * Returns the sorted list of entries in a directory.
  */
-async function getEntries(absolutePath: string | undefined, path: string, options: SearchOptions, loopDetected: boolean): Promise<Entry[]> {
+async function getEntries(absolutePath: string | undefined, path: string | undefined, searchOptions: SearchOptions, loopDetected: boolean): Promise<Entry[]> {
   if (!absolutePath || loopDetected) {
     return [];
   }
 
-  const statPath = await statAsync(absolutePath);
+  const stat = await statAsync(absolutePath);
 
-  if (statPath.isDirectory()) {
+  if (stat.isDirectory()) {
     const rawEntries = await readdirAsync(absolutePath)
-    return buildEntries(absolutePath, path, rawEntries, options);
+    return buildEntries(absolutePath, path, rawEntries, searchOptions);
   } else {
     const name = pathUtils.basename(absolutePath);
-    return [
-      {
-        name: name,
-        absolutePath: absolutePath,
-        path: path,
-        stat: statPath
-      }
-    ];
+    return [{name, absolutePath, path, stat}];
   }
 }
 
-async function buildEntries(absolutePath: string, path: string, rawEntries: string[], options: SearchOptions): Promise<Entry[]> {
-  const promisedEntries = rawEntries.map(entryName => buildEntry(absolutePath, path, entryName, options));
-  const entries = await Promise.all(promisedEntries);
+async function buildEntries(absolutePath: string, path: string, rawEntries: string[], searchOptions: SearchOptions): Promise<Entry[]> {
+  const entries = await Promise.all(rawEntries.map(entryName => buildEntry(absolutePath, path, entryName, searchOptions)));
+  const filteredEntries = entries.filter((entry) => filterEntry(entry, searchOptions));
     
-  const result: Entry[] = [];
+  // // TODO: Maybe use Array.filter() method
+  // const filteredEntries: Entry[] = [];
+  // entries.forEach((entry) => {
+  //   if (filterEntry(entry, searchOptions)) {
+  //     filteredEntries.push(entry);
+  //   }
+  // });
 
-  // TODO: Maybe use Array.filter() method
-  entries.forEach((entry) => {
-    if (filterEntry(entry, options)) {
-      result.push(entry);
-    }
-  });
-
-  return options.ignoreCase ? result.sort(compareEntryIgnoreCase) : result.sort(compareEntryCaseSensitive);
+  return searchOptions.ignoreCase ? filteredEntries.sort(compareEntryIgnoreCase) : filteredEntries.sort(compareEntryCaseSensitive);
 }
 
 async function buildEntry(absolutePath: string, path: string, entryName: string, options: SearchOptions): Promise<Entry> {
-  var entryAbsolutePath = fastPathJoin(absolutePath, entryName);
-  var entryPath = fastPathJoin(path, entryName);
+  const entryAbsolutePath = fastPathJoin(absolutePath, entryName);
+  const entryPath = fastPathJoin(path, entryName);
   
-  const lstatEntry = await lstatAsync(entryAbsolutePath)
-  const isSymlink = lstatEntry.isSymbolicLink();
-  const statPromise = options.skipSymlinks && isSymlink ? Promise.resolve(undefined) : statAsync(entryAbsolutePath);
-  const statEntry = await statPromise;
+  const lstat = await lstatAsync(entryAbsolutePath)
+  const isSymlink = lstat.isSymbolicLink();
+  const stat = options.skipSymlinks && isSymlink ? undefined : await statAsync(entryAbsolutePath);
 
   return {
     name: entryName,
     absolutePath: entryAbsolutePath,
     path: entryPath,
-    stat: statEntry,
-    lstat: lstatEntry,
+    stat,
+    lstat,
     symlink: isSymlink
   };
 }

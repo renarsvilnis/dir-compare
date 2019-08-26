@@ -19,7 +19,7 @@ export function fastPathJoin(root: string, entryName: string) {
 
 export function detectLoop(entry: Entry | undefined, symlinkCacheGroup: SymlinkCacheGroup) {
   if (entry && entry.symlink) {
-    var realPath = fs.realpathSync(entry.absolutePath);
+    const realPath = fs.realpathSync(entry.absolutePath);
     if (symlinkCacheGroup[realPath]) {
       return true;
     }
@@ -37,7 +37,7 @@ export function cloneSymlinkCache(symlinkCache: SymlinkCache) {
 // TODO: Maybe use different method of doing it, see if it requires copying
 // methods aswell as propterties - https://thecodebarbarian.com/object-assign-vs-object-spread.html
 function shallowClone<T>(obj: T): T {
-  var cloned = {};
+  const cloned = {};
   Object.keys(obj).forEach(function(key) {
     cloned[key] = obj[key];
   });
@@ -52,9 +52,9 @@ export function symlinkCacheFactory(): SymlinkCache {
 }
 
 export function entryFactory(absolutePath: string, path: string, name: string): Entry {
-  var statEntry = fs.statSync(absolutePath);
-  var lstatEntry = fs.lstatSync(absolutePath);
-  var isSymlink = lstatEntry.isSymbolicLink();
+  const statEntry = fs.statSync(absolutePath);
+  const lstatEntry = fs.lstatSync(absolutePath);
+  const isSymlink = lstatEntry.isSymbolicLink();
   return {
     name: name,
     absolutePath: absolutePath,
@@ -68,7 +68,7 @@ export function entryFactory(absolutePath: string, path: string, name: string): 
 /**
  * One of 'file','directory'
  */
-export function getType(fileStat: fs.Stats): DifferenceType {
+export function getType(fileStat: fs.Stats) {
   if (fileStat.isDirectory()) {
     return "directory";
   } else {
@@ -79,9 +79,9 @@ export function getType(fileStat: fs.Stats): DifferenceType {
  * Matches fileName with pattern.
  */
 export function match(fileName: string, pattern: string): boolean {
-  var patternArray = pattern.split(",");
-  for (var i = 0; i < patternArray.length; i++) {
-    var pat = patternArray[i];
+  const patternArray = pattern.split(",");
+  for (let i = 0; i < patternArray.length; i++) {
+    const pat = patternArray[i];
     if (minimatch(fileName, pat, { dot: true })) {
       //nocase
       return true;
@@ -118,7 +118,7 @@ export function compareEntryCaseSensitive(a: Entry, b: Entry): CompareResult {
     return 1;
   } else {
     // http://stackoverflow.com/questions/1179366/is-there-a-javascript-strcmp
-    var str1 = a.name,
+    const str1 = a.name,
       str2 = b.name;
     return str1 == str2 ? 0 : str1 > str2 ? 1 : -1;
   }
@@ -133,7 +133,7 @@ export function compareEntryIgnoreCase(a: Entry, b: Entry): CompareResult {
     return 1;
   } else {
     // http://stackoverflow.com/questions/1179366/is-there-a-javascript-strcmp
-    var str1 = a.name.toLowerCase(),
+    const str1 = a.name.toLowerCase(),
       str2 = b.name.toLowerCase();
     return str1 == str2 ? 0 : str1 > str2 ? 1 : -1;
   }

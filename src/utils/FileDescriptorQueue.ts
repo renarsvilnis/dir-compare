@@ -12,7 +12,7 @@ export interface FileDescriptorQueueItem {
  * Limits the number of concurrent file handlers.
  * Use it as a wrapper over fs.open() and fs.close().
  * Example:
- *  var fdQueue = new FileDescriptorQueue(8);
+ *  const fdQueue = new FileDescriptorQueue(8);
  *  fdQueue.open(path, flags, (err, fd) =>{
  *    ...
  *    fdQueue.close(fd, (err) =>{

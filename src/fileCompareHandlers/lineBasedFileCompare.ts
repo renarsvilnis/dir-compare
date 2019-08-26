@@ -35,22 +35,22 @@ export default function lineBasedFileCompare(
       bufferPair = bufferPool.allocateBuffers();
       fd1 = fds[0];
       fd2 = fds[1];
-      var buf1 = bufferPair.buf1;
-      var buf2 = bufferPair.buf2;
+      const buf1 = bufferPair.buf1;
+      const buf2 = bufferPair.buf2;
       // let progress = 0;
-      var last1 = "",
-        last2 = "";
-      var compareAsyncInternal = (): Promise<boolean> => {
+      let last1 = "";
+      let last2 = "";
+      const compareAsyncInternal = (): Promise<boolean> => {
         return Promise.all([
           wrapper.read(fd1, buf1, 0, BUF_SIZE, null),
           wrapper.read(fd2, buf2, 0, BUF_SIZE, null)
         ]).then(sizes => {
-          var size1 = sizes[0];
-          var size2 = sizes[1];
-          var chunk1 = buf1.toString("utf8", 0, size1);
-          var chunk2 = buf2.toString("utf8", 0, size2);
-          var lines1 = (last1 + chunk1).split(/\n/);
-          var lines2 = (last2 + chunk2).split(/\n/);
+          const size1 = sizes[0];
+          const size2 = sizes[1];
+          const chunk1 = buf1.toString("utf8", 0, size1);
+          const chunk2 = buf2.toString("utf8", 0, size2);
+          const lines1 = (last1 + chunk1).split(/\n/);
+          const lines2 = (last2 + chunk2).split(/\n/);
           if (size1 === 0 && size2 === 0) {
             // End of file reached
             return true;
@@ -89,9 +89,9 @@ function removeWhiteSpaces(str: string) {
 }
 
 function compareLines(lines1: string[], lines2: string[], options: LineBasedFileCompareOptions) {
-  for (var i = 0; i < lines1.length - 1; i++) {
-    var line1 = lines1[i];
-    var line2 = lines2[i];
+  for (let i = 0; i < lines1.length - 1; i++) {
+    let line1 = lines1[i];
+    let line2 = lines2[i];
     if (options.ignoreLineEnding) {
       line1 = removeLineEnding(line1);
       line2 = removeLineEnding(line2);

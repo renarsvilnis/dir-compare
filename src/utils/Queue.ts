@@ -33,7 +33,7 @@ export default class Queue<Item> {
     if (this.queue.length == 0) return undefined;
 
     // store the item at the front of the queue
-    var item = this.queue[this.offset];
+    const item = this.queue[this.offset];
 
     // increment the offset and remove the free space if necessary
     if (++this.offset > this.maxUnusedArraySize) {
