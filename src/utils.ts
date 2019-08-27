@@ -66,6 +66,11 @@ export function getType(fileStat: fs.Stats) {
     return "file";
   }
 }
+
+export function getTypeLoose(stat?: fs.Stats) {
+  return stat ? getType(stat) : "missing";
+}
+
 /**
  * Matches fileName with pattern.
  */

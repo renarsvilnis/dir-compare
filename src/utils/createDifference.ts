@@ -1,7 +1,7 @@
 import path from "path";
 
 import { Entry, DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual } from "../types";
-import { getType } from "../utils";
+import { getTypeLoose } from "../utils";
 
 export function createLeftOnlyDifference(entry1: Entry, level: number, relativePath: string): DifferenceLeft {
   return {
@@ -11,7 +11,7 @@ export function createLeftOnlyDifference(entry1: Entry, level: number, relativeP
     name1: entry1.name,
     name2: undefined,
     state: "left",
-    type1: getType(entry1.stat),
+    type1: getTypeLoose(entry1.stat),
     type2: "missing",
     size1: entry1.stat.size,
     size2: undefined,
@@ -31,7 +31,7 @@ export function createRightOnlyDifference(entry2: Entry, level: number, relative
     name2: entry2.name,
     state: "right",
     type1: "missing",
-    type2: getType(entry2.stat),
+    type2: getTypeLoose(entry2.stat),
     size1: undefined,
     size2: entry2.stat.size,
     date1: undefined,
@@ -54,8 +54,8 @@ export function createEqualDifference(
     name1: entry1.name,
     name2: entry2.name,
     state: "equal",
-    type1: getType(entry1.stat),
-    type2: getType(entry2.stat),
+    type1: getTypeLoose(entry1.stat),
+    type2: getTypeLoose(entry2.stat),
     size1: entry1.stat.size,
     size2: entry2.stat.size,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
@@ -78,8 +78,8 @@ export function createDistinctDifference(
     name1: entry1.name,
     name2: entry2.name,
     state: "distinct",
-    type1: getType(entry1.stat),
-    type2: getType(entry2.stat),
+    type1: getTypeLoose(entry1.stat),
+    type2: getTypeLoose(entry2.stat),
     size1: entry1.stat.size,
     size2: entry2.stat.size,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output

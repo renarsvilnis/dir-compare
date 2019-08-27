@@ -7,7 +7,8 @@ export default class Queue<Item> {
   offset: number = 0;
   maxUnusedArraySize: number;
 
-  constructor(maxUnusedArraySize: number = 10000) {
+  constructor(maxUnusedArraySize: number) {
+    // TODO: does maxUnusedArraySize inmprove performance?
     this.maxUnusedArraySize = maxUnusedArraySize;
   }
 
@@ -21,8 +22,8 @@ export default class Queue<Item> {
    *
    * item - the item to enqueue
    */
-  enqueue(item: Item): void {
-    this.queue.push(item);
+  enqueue(...items: Item[]): void {
+    this.queue.push(...items);
   }
 
   /* Dequeues an item and returns it. If the queue is empty, the value

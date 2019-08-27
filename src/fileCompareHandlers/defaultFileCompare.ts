@@ -17,7 +17,13 @@ const bufferPool = new BufferPool(BUF_SIZE, MAX_CONCURRENT_FILE_COMPARE); // fdQ
 /**
  * Compares two files by content
  */
-export default function defaultFileCompare(path1: string, stat1: Stats, path2: string, stat2: Stats, options?: {}) {
+export default function defaultFileCompare(
+  path1: string,
+  stat1: Stats,
+  path2: string,
+  stat2: Stats,
+  options?: {}
+): Promise<boolean> {
   let fd1: number | undefined;
   let fd2: number | undefined;
   let bufferPair: BufferPoolEntry | undefined;

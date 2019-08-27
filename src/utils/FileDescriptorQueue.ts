@@ -6,6 +6,8 @@ import Queue from "./Queue";
 // const fsOpenAsync = promisify(fs.open);
 const fsCloseAsync = promisify(fs.close);
 
+const MAX_FILE_DESCRIPTOR_QUEUE_LENGTH = 10000;
+
 export interface FileDescriptorQueueItem {
   path: string;
   flags: string | number;
@@ -26,7 +28,7 @@ export interface FileDescriptorQueueItem {
  *  As of node v7, calling fd.close without a callback is deprecated.
  */
 export default class FileDescriptorQueue {
-  pendingJobs = new Queue<FileDescriptorQueueItem>();
+  pendingJobs = new Queue<FileDescriptorQueueItem>(MAX_FILE_DESCRIPTOR_QUEUE_LENGTH);
   activeCount = 0;
   maxFilesNo: number;
 

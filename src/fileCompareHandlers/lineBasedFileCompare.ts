@@ -28,7 +28,7 @@ export default function lineBasedFileCompare(
   path2: string,
   stat2: Stats,
   options: LineBasedFileCompareOptions
-) {
+): Promise<boolean> {
   let fd1: number;
   let fd2: number;
   let bufferPair: BufferPoolEntry | undefined;

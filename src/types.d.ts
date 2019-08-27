@@ -83,13 +83,14 @@ export interface Results {
   differences: Difference[];
 }
 
+// TODO: maybe seperate entry by type?
 export interface Entry {
   name: string;
   absolutePath: string;
   path: string;
-  stat: fs.Stats;
+  stat?: fs.Stats;
   lstat: fs.Stats;
-  symlink: boolean;
+  isSymlink: boolean;
 }
 
 /**
