@@ -36,7 +36,10 @@ export default function defaultFileCompare(
       // let progress = 0;
       const compareAsyncInternal = (): Promise<boolean> => {
         return Promise.all([readAsync(fd1, buf1, 0, BUF_SIZE, null), readAsync(fd2, buf2, 0, BUF_SIZE, null)]).then(
-          ([size1, size2]) => {
+          ([readResult1, readResult2]) => {
+            const size1 = readResult1.bytesRead;
+            const size2 = readResult2.bytesRead;
+
             if (size1 !== size2) {
               return false;
             } else if (size1 === 0) {

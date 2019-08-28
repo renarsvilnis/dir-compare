@@ -79,8 +79,8 @@ export default async function compareAsyncInternal({
   while (i1 < entries1LengthCached || i2 < entries2LengthCached) {
     const entry1 = entries1[i1];
     const entry2 = entries2[i2];
-    const p1 = entry1 ? entry1.absolutePath : undefined;
-    const p2 = entry2 ? entry2.absolutePath : undefined;
+    const path1 = entry1 ? entry1.absolutePath : undefined;
+    const path2 = entry2 ? entry2.absolutePath : undefined;
     const fileStat1 = entry1 ? entry1.stat : undefined;
     const fileStat2 = entry2 ? entry2.stat : undefined;
     let type1: DifferenceType;
@@ -120,7 +120,7 @@ export default async function compareAsyncInternal({
           const cmpFile = (entry1: Entry, entry2: Entry, type1: DifferenceType, type2: DifferenceType) => {
             // TODO: improve error detection for compareFile result
             samePromise = searchOptions
-              .compareFile(p1, fileStat1, p2, fileStat2, searchOptions)
+              .compareFile(path1, fileStat1, path2, fileStat2, searchOptions)
               .then(comparisonResult => {
                 const same, error;
                 if (typeof comparisonResult === "boolean") {
@@ -283,9 +283,9 @@ async function buildEntry(
   const entryAbsolutePath = fastPathJoin(absolutePath, entryName);
   const entryPath = fastPathJoin(path, entryName);
 
+  const lstat = await lstatAsync(entryAbsolutePath);
   const isSymlink = lstat.isSymbolicLink();
   const stat = options.skipSymlinks && isSymlink ? undefined : await statAsync(entryAbsolutePath);
-  const lstat = await lstatAsync(entryAbsolutePath);
 
   return {
     name: entryName,

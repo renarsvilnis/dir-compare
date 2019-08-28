@@ -42,7 +42,10 @@ export default function lineBasedFileCompare(
       let last2 = "";
       const compareAsyncInternal = (): Promise<boolean> => {
         return Promise.all([readAsync(fd1, buf1, 0, BUF_SIZE, null), readAsync(fd2, buf2, 0, BUF_SIZE, null)]).then(
-          ([size1, size2]) => {
+          ([readResult1, readResult2]) => {
+            const size1 = readResult1.bytesRead;
+            const size2 = readResult2.bytesRead;
+
             const chunk1 = buf1.toString("utf8", 0, size1);
             const chunk2 = buf2.toString("utf8", 0, size2);
             const lines1 = (last1 + chunk1).split(/\n/);
