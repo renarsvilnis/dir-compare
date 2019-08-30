@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
 
     /**
-     * Make typscript stricter
+     * Make typescript stricter
      * https://codeburst.io/five-tips-i-wish-i-knew-when-i-started-with-typescript-c9e8609029db
      */
     "forceConsistentCasingInFileNames": true,
@@ -23,7 +23,7 @@
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     /**
-     * Improve importing for older @type definiations of "export=" such as ip-regex
+     * Improve importing for older @type definitions of "export=" such as ip-regex
      * https://stackoverflow.com/a/51758340/1378261
      */
     "esModuleInterop": true,
@@ -32,7 +32,7 @@
   // "files": [
   // ],
   "include": [
-    "tests/**/*",
+    // "tests/**/*",
     "src/**/*",
     "package.json"
   ]

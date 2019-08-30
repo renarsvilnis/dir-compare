@@ -1,9 +1,10 @@
 import path from "path";
 
-import { Entry, DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual } from "../types";
-import { getTypeLoose } from "../utils";
+import { DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual, EntryNormal } from "../types";
+import { getType } from "../utils";
 
-export function createLeftOnlyDifference(entry1: Entry, level: number, relativePath: string): DifferenceLeft {
+// TODO: maybe pass type1 as param?
+export function createLeftOnlyDifference(entry1: EntryNormal, level: number, relativePath: string): DifferenceLeft {
   return {
     path1: path.dirname(entry1.path),
     path2: undefined,
@@ -11,7 +12,7 @@ export function createLeftOnlyDifference(entry1: Entry, level: number, relativeP
     name1: entry1.name,
     name2: undefined,
     state: "left",
-    type1: getTypeLoose(entry1.stat),
+    type1: getType(entry1.stat),
     type2: "missing",
     size1: entry1.stat.size,
     size2: undefined,
@@ -22,7 +23,8 @@ export function createLeftOnlyDifference(entry1: Entry, level: number, relativeP
   };
 }
 
-export function createRightOnlyDifference(entry2: Entry, level: number, relativePath: string): DifferenceRight {
+// TODO: maybe pass type2 as param?
+export function createRightOnlyDifference(entry2: EntryNormal, level: number, relativePath: string): DifferenceRight {
   return {
     path1: undefined,
     path2: path.dirname(entry2.path),
@@ -31,7 +33,7 @@ export function createRightOnlyDifference(entry2: Entry, level: number, relative
     name2: entry2.name,
     state: "right",
     type1: "missing",
-    type2: getTypeLoose(entry2.stat),
+    type2: getType(entry2.stat),
     size1: undefined,
     size2: entry2.stat.size,
     date1: undefined,
@@ -41,9 +43,10 @@ export function createRightOnlyDifference(entry2: Entry, level: number, relative
   };
 }
 
+// TODO: maybe pass type1 and type2 as param?
 export function createEqualDifference(
-  entry1: Entry,
-  entry2: Entry,
+  entry1: EntryNormal,
+  entry2: EntryNormal,
   level: number,
   relativePath: string
 ): DifferenceEqual {
@@ -54,8 +57,8 @@ export function createEqualDifference(
     name1: entry1.name,
     name2: entry2.name,
     state: "equal",
-    type1: getTypeLoose(entry1.stat),
-    type2: getTypeLoose(entry2.stat),
+    type1: getType(entry1.stat),
+    type2: getType(entry2.stat),
     size1: entry1.stat.size,
     size2: entry2.stat.size,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
@@ -65,9 +68,10 @@ export function createEqualDifference(
   };
 }
 
+// TODO: maybe pass type1 and type2 as param?
 export function createDistinctDifference(
-  entry1: Entry,
-  entry2: Entry,
+  entry1: EntryNormal,
+  entry2: EntryNormal,
   level: number,
   relativePath: string
 ): DifferenceDistinct {
@@ -78,8 +82,8 @@ export function createDistinctDifference(
     name1: entry1.name,
     name2: entry2.name,
     state: "distinct",
-    type1: getTypeLoose(entry1.stat),
-    type2: getTypeLoose(entry2.stat),
+    type1: getType(entry1.stat),
+    type2: getType(entry2.stat),
     size1: entry1.stat.size,
     size2: entry2.stat.size,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output

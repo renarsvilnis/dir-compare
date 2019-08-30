@@ -5,7 +5,7 @@ import { promisify } from "util";
 import compareAsyncInternal from "./compareAsync";
 import defaultFileCompare from "./fileCompareHandlers/defaultFileCompare";
 import lineBasedFileCompare from "./fileCompareHandlers/lineBasedFileCompare";
-import { entryFactory, symlinkCacheFactory, isNumericLike } from "./utils";
+import { entryRootFactory, symlinkCacheFactory, isNumericLike } from "./utils";
 import Statistics from "./utils/Statistics";
 
 const realpathAsync = promisify(fs.realpath);
@@ -31,9 +31,11 @@ export async function compareAsync(path1: string, path2: string, options: Search
     differences.push(difference);
   };
 
+  // TODO: implement progress, need to figure out how to get totalCount before
+  // and also take care of options
   await compareAsyncInternal({
-    rootEntry1: entryFactory(absolutePath1, path1, pathUtils.basename(path1)),
-    rootEntry2: entryFactory(absolutePath2, path2, pathUtils.basename(path2)),
+    rootEntry1: entryRootFactory(absolutePath1, path1, pathUtils.basename(path1)),
+    rootEntry2: entryRootFactory(absolutePath2, path2, pathUtils.basename(path2)),
     level: 0,
     relativePath: "",
     searchOptions: options,
@@ -47,7 +49,7 @@ export async function compareAsync(path1: string, path2: string, options: Search
 function prepareOptions(options: SearchOptions): SearchOptions {
   options = options || {};
 
-  // TODO: should it just use the util.clone? See that it doesnt copy methods!
+  // TODO: should it just use the util.clone? See that it doesn't copy methods!
   const clone = JSON.parse(JSON.stringify(options));
   clone.compareFile = options.compareFile || defaultFileCompare;
   clone.dateTolerance = clone.dateTolerance ? Number(clone.dateTolerance) : 1000;

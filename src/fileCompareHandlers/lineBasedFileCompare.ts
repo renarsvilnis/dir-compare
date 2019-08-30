@@ -1,6 +1,6 @@
 /**
  * Compare files line by line with options to ignore
- * line endings and white space differencies.
+ * line endings and white space differences.
  */
 import { Stats } from "fs";
 import fs from "fs";

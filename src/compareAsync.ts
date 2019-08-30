@@ -18,7 +18,15 @@ import {
   filterEntry,
   fastPathJoin
 } from "./utils";
-import { Entry, SymlinkCache, SearchOptions, Difference, CompareResult, DifferenceType } from "./types";
+import {
+  Entry,
+  SymlinkCache,
+  SearchOptions,
+  Difference,
+  CompareResult,
+  DifferenceType,
+  CompareFileResult
+} from "./types";
 
 const statAsync = promisify(fs.stat);
 const readdirAsync = promisify(fs.readdir);
@@ -65,17 +73,21 @@ export default async function compareAsyncInternal({
     getEntries(absolutePath2, path2, searchOptions, loopDetected2)
   ]);
 
-  const comparePromises = [];
-  const compareFilePromises = [];
+  const comparePromises: ReturnType<typeof compareAsyncInternal>[] = [];
+  const compareFilePromises: Promise<CompareFileResult>[] = [];
 
-  // TODO: add documentation
+  /**
+   * Index of which entry from each group to process, once an entry from a group
+   * is processed the groups index variable gets incremented
+   */
   let i1 = 0;
   let i2 = 0;
 
-  // Cache entries length property as their lenght is static
+  // Cache entries length property as their length is static
   const entries1LengthCached = entries1.length;
   const entries2LengthCached = entries2.length;
 
+  // Loop while both entries are processed
   while (i1 < entries1LengthCached || i2 < entries2LengthCached) {
     const entry1 = entries1[i1];
     const entry2 = entries2[i2];
@@ -106,8 +118,8 @@ export default async function compareAsyncInternal({
     // process entry
     if (cmp === 0) {
       // Both left/right exist and have the same name and type
-      let samePromise = undefined;
-      let same = undefined;
+      let same: boolean | undefined = undefined;
+
       if (type1 === "file") {
         if (searchOptions.compareSize && fileStat1.size !== fileStat2.size) {
           same = false;
@@ -117,29 +129,27 @@ export default async function compareAsyncInternal({
         ) {
           same = false;
         } else if (searchOptions.compareContent) {
-          const cmpFile = (entry1: Entry, entry2: Entry, type1: DifferenceType, type2: DifferenceType) => {
-            // TODO: improve error detection for compareFile result
-            samePromise = searchOptions
-              .compareFile(path1, fileStat1, path2, fileStat2, searchOptions)
-              .then(comparisonResult => {
-                const same, error;
-                if (typeof comparisonResult === "boolean") {
-                  same = comparisonResult;
-                } else {
-                  error = comparisonResult;
-                }
+          const compareFile = async (entry1: Entry, entry2: Entry, type1: DifferenceType, type2: DifferenceType) => {
+            let isSame: boolean | undefined = undefined;
+            let error: Error | undefined = undefined;
 
-                return {
-                  entry1: entry1,
-                  entry2: entry2,
-                  same: same,
-                  error: error,
-                  type1: type1,
-                  type2: type2
-                };
-              });
+            try {
+              isSame = await searchOptions.compareFile(path1, fileStat1, path2, fileStat2, searchOptions);
+            } catch (errorLocal) {
+              error = errorLocal;
+            }
+
+            return {
+              entry1,
+              entry2,
+              isSame,
+              error,
+              type1,
+              type2
+            };
           };
-          cmpFile(entry1, entry2, type1, type2);
+
+          compareFilePromises.push(compareFile(entry1, entry2, type1, type2));
         } else {
           same = true;
         }
@@ -152,13 +162,11 @@ export default async function compareAsyncInternal({
             ? createEqualDifference(entry1, entry2, level, relativePath)
             : createDistinctDifference(entry1, entry2, level, relativePath)
         );
-      } else {
-        compareFilePromises.push(samePromise);
       }
 
       i1++;
       i2++;
-      if (!searchOptions.skipSubdirs && type1 === "directory") {
+      if (!searchOptions.skipSubdirectories && type1 === "directory") {
         comparePromises.push(
           compareAsyncInternal({
             rootEntry1: entry1,
@@ -177,7 +185,7 @@ export default async function compareAsyncInternal({
       onDifference(createLeftOnlyDifference(entry1, level, relativePath));
 
       i1++;
-      if (!searchOptions.skipSubdirs && type1 === "directory") {
+      if (!searchOptions.skipSubdirectories && type1 === "directory") {
         comparePromises.push(
           compareAsyncInternal({
             rootEntry1: entry1,
@@ -196,7 +204,7 @@ export default async function compareAsyncInternal({
       onDifference(createRightOnlyDifference(entry2, level, relativePath));
 
       i2++;
-      if (!searchOptions.skipSubdirs && type2 === "directory") {
+      if (!searchOptions.skipSubdirectories && type2 === "directory") {
         comparePromises.push(
           compareAsyncInternal({
             rootEntry1: undefined,

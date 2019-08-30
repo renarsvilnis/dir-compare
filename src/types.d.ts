@@ -45,7 +45,7 @@ export interface SearchOptions {
   /**
    * Skips sub directories. Defaults to 'false'.
    */
-  skipSubdirs: boolean;
+  skipSubdirectories: boolean;
 
   /**
    * Ignore symbolic links. Defaults to 'false'.
@@ -72,7 +72,7 @@ export interface SearchOptions {
    */
   compareFile: CompareFile;
 
-  // TODO: seperate specific file compare options from general
+  // TODO: separate specific file compare options from general
   // Only used for lineBasedFileCompare
   ignoreLineEnding: boolean;
   ignoreWhiteSpaces: boolean;
@@ -83,15 +83,61 @@ export interface Results {
   differences: Difference[];
 }
 
-// TODO: maybe seperate entry by type?
-export interface Entry {
+// TODO: maybe separate entry by type?
+export interface EntryNormal {
   name: string;
   absolutePath: string;
   path: string;
-  stat?: fs.Stats;
+  stat: fs.Stats;
+  lstat: fs.Stats;
+  isSymlink: false;
+}
+
+export interface EntrySymlink {
+  name: string;
+  absolutePath: string;
+  path: string;
+  stat: undefined;
+  lstat: fs.Stats;
+  isSymlink: true;
+}
+
+// Every property is looked-up on for the initial a.k.a root compare
+// TODO: figure out does root really need to lookup everything or should also
+// take in options such as skipSymlinks etc.
+export interface EntryRoot {
+  name: string;
+  absolutePath: string;
+  path: string;
+  stat: fs.Stats;
   lstat: fs.Stats;
   isSymlink: boolean;
 }
+
+export type Entry = EntryNormal | EntrySymlink | EntryRoot;
+export type EntryNonRoot = EntryNormal | EntrySymlink;
+
+export interface CompareFileResult {
+  entry1: Entry;
+  entry2: Entry;
+  isSame?: boolean;
+  error?: Error;
+  type1: DifferenceType;
+  type2: DifferenceType;
+}
+
+// export interface EntryValid {
+//   name: string;
+//   absolutePath: string;
+//   path: string;
+//   stat: undefined;
+//   lstat: undefined;
+//   isSymlink: boolean;
+// }
+
+// export interface EntryMissing {
+
+// }
 
 /**
  * Output format:
@@ -208,7 +254,7 @@ export interface StatisticResults {
   same: boolean;
 
   /**
-   * Total diffference count
+   * Total difference count
    */
   total: number;
 

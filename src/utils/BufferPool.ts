@@ -18,7 +18,7 @@ export default class BufferPool {
   constructor(size: number, count: number) {
     this.bufferPool = [];
 
-    // TODO: why was it originially wrapped in a function? That doesn't make
+    // TODO: why was it originally wrapped in a function? That doesn't make
     // sense
     const createAsyncBuffers = () => {
       for (let i = 0; i < count; i++) {

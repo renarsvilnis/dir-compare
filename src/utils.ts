@@ -2,9 +2,18 @@ import * as fs from "fs";
 import minimatch from "minimatch";
 import path from "path";
 
-import { Entry, SearchOptions, SymlinkCache, SymlinkCacheGroup, CompareResult } from "./types";
+import {
+  Entry,
+  EntryRoot,
+  SearchOptions,
+  SymlinkCache,
+  SymlinkCacheGroup,
+  CompareResult,
+  EntryNormal,
+  EntryNonRoot
+} from "./types";
 
-// Insted of shallow copy
+// Instead of shallow copy
 // https://stackoverflow.com/a/10916838/1378261
 // import v8 from "v8";
 // const structuredClone = (obj: any) => {
@@ -18,7 +27,7 @@ export function fastPathJoin(root: string, entryName: string) {
 }
 
 export function detectLoop(entry: Entry | undefined, symlinkCacheGroup: SymlinkCacheGroup) {
-  if (entry && entry.symlink) {
+  if (entry && entry.isSymlink) {
     const realPath = fs.realpathSync(entry.absolutePath);
     if (symlinkCacheGroup[realPath]) {
       return true;
@@ -41,18 +50,17 @@ export function symlinkCacheFactory(): SymlinkCache {
   };
 }
 
-export function entryFactory(absolutePath: string, path: string, name: string): Entry {
+export function entryRootFactory(absolutePath: string, path: string, name: string): EntryRoot {
   // TODO: make it async?
   const statEntry = fs.statSync(absolutePath);
   const lstatEntry = fs.lstatSync(absolutePath);
-  const isSymlink = lstatEntry.isSymbolicLink();
   return {
     name: name,
     absolutePath: absolutePath,
     path: path,
     stat: statEntry,
     lstat: lstatEntry,
-    symlink: isSymlink
+    isSymlink: lstatEntry.isSymbolicLink()
   };
 }
 
@@ -89,12 +97,12 @@ export function match(fileName: string, pattern: string): boolean {
 /**
  * Filter entries by file name. Returns true if the file is to be processed.
  */
-export function filterEntry(entry: Entry, options: SearchOptions): boolean {
-  if (entry.symlink && options.skipSymlinks) {
+export function filterEntry(entry: EntryNonRoot, options: SearchOptions): boolean {
+  if (entry.isSymlink && options.skipSymlinks) {
     return false;
   }
 
-  if (entry.stat.isFile() && options.includeFilter && !match(entry.name, options.includeFilter)) {
+  if (entry.stat && entry.stat.isFile() && options.includeFilter && !match(entry.name, options.includeFilter)) {
     return false;
   }
 
@@ -107,7 +115,7 @@ export function filterEntry(entry: Entry, options: SearchOptions): boolean {
 /**
  * Comparator for directory entries sorting.
  */
-export function compareEntryCaseSensitive(a: Entry, b: Entry): CompareResult {
+export function compareEntryCaseSensitive(a: EntryNormal, b: EntryNormal): CompareResult {
   if (a.stat.isDirectory() && b.stat.isFile()) {
     return -1;
   } else if (a.stat.isFile() && b.stat.isDirectory()) {
@@ -122,7 +130,7 @@ export function compareEntryCaseSensitive(a: Entry, b: Entry): CompareResult {
 /**
  * Comparator for directory entries sorting.
  */
-export function compareEntryIgnoreCase(a: Entry, b: Entry): CompareResult {
+export function compareEntryIgnoreCase(a: EntryNormal, b: EntryNormal): CompareResult {
   if (a.stat.isDirectory() && b.stat.isFile()) {
     return -1;
   } else if (a.stat.isFile() && b.stat.isDirectory()) {
@@ -144,7 +152,7 @@ export function sameDate(date1: Date, date2: Date, tolerance: number): boolean {
 }
 
 /**
- * Tests if the input prepresents an numbering like input, e.g. "52.42"
+ * Tests if the input represents an numbering like input, e.g. "52.42"
  */
 export function isNumericLike(n: any): boolean {
   return !isNaN(parseFloat(n)) && isFinite(n);
