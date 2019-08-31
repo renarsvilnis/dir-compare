@@ -1,5 +1,5 @@
 import { Options } from "../src/types";
-var compareAsync = require('../index').compareAsync;
+import dircompare, {lineCompare} from '../src';
 var lineCompare = require('../index').fileCompareHandlers.lineBasedFileCompare
 var util = require('util');
 
@@ -113,7 +113,7 @@ export function getTests(testDirPath: string){
                  onlyAsync: true,
                  onlyLibrary: true,
                  runAsync: function(){
-                     return compareAsync(testDirPath+'/d1', testDirPath+'/none', {})
+                     return dircompare(testDirPath+'/d1', testDirPath+'/none', {})
                      .then(function(res){return 'res: ' + JSON.stringify(res)})
                      .catch(function(error){return 'error occurred'})
                  }

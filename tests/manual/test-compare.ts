@@ -1,4 +1,4 @@
-var dircompare = require("../../index.js");
+import dircompare from "../src/index.js";
 
 function run() {
   // process.chdir('/home/liviu/tmp/00/')
@@ -17,13 +17,13 @@ function run() {
   var resSync;
   var i = 1;
   console.log("Sync");
-  resSync = dircompare.compareSync(path1, path2, { compareSize: true });
+  resSync = dircompare(path1, path2, { compareSize: true });
   console.log(`res${i++} ` + (JSON.stringify(resSync) === expected1 ? "OK" : "FAIL"));
-  resSync = dircompare.compareSync(path1, path2, { compareContent: true });
+  resSync = dircompare(path1, path2, { compareContent: true });
   console.log(`res${i++} ` + (JSON.stringify(resSync) === expected2 ? "OK" : "FAIL"));
-  resSync = dircompare.compareSync(path1, path2, { includeFilter: "*.c", compareContent: true });
+  resSync = dircompare(path1, path2, { includeFilter: "*.c", compareContent: true });
   console.log(`res${i++} ` + (JSON.stringify(resSync) === expected3 ? "OK" : "FAIL"));
-  resSync = dircompare.compareSync(path1, path2, {
+  resSync = dircompare(path1, path2, {
     includeFilter: "*.c",
     compareContent: true,
     compareFileSync: dircompare.fileCompareHandlers.lineBasedFileCompare.compareSync,
