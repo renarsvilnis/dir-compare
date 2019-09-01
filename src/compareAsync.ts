@@ -132,7 +132,7 @@ export default async function compareAsyncInternal({
         ) {
           same = false;
         } else if (searchOptions.compareContent) {
-          const compareFile = async (entry1: Entry, entry2: Entry) => {
+          const compareFile = async () => {
             const isSame = await searchOptions.compareFile(
               entry1.absolutePath,
               entry1.stat,
@@ -143,7 +143,7 @@ export default async function compareAsyncInternal({
             onSame(isSame);
           };
 
-          compareFilePromises.push(compareFile(entry1, entry2));
+          compareFilePromises.push(compareFile());
         } else {
           same = true;
         }
