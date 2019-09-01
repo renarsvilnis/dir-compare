@@ -1,10 +1,10 @@
 import path from "path";
 
-import { DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual, EntryNormal } from "../types";
+import { DifferenceLeft, DifferenceRight, DifferenceDistinct, DifferenceEqual, Entry } from "../types";
 import { getType } from "../utils";
 
 // TODO: maybe pass type1 as param?
-export function createLeftOnlyDifference(entry1: EntryNormal, level: number, relativePath: string): DifferenceLeft {
+export function createLeftOnlyDifference(entry1: Entry, level: number, relativePath: string): DifferenceLeft {
   return {
     path1: path.dirname(entry1.path),
     path2: undefined,
@@ -24,7 +24,7 @@ export function createLeftOnlyDifference(entry1: EntryNormal, level: number, rel
 }
 
 // TODO: maybe pass type2 as param?
-export function createRightOnlyDifference(entry2: EntryNormal, level: number, relativePath: string): DifferenceRight {
+export function createRightOnlyDifference(entry2: Entry, level: number, relativePath: string): DifferenceRight {
   return {
     path1: undefined,
     path2: path.dirname(entry2.path),
@@ -45,8 +45,8 @@ export function createRightOnlyDifference(entry2: EntryNormal, level: number, re
 
 // TODO: maybe pass type1 and type2 as param?
 export function createEqualDifference(
-  entry1: EntryNormal,
-  entry2: EntryNormal,
+  entry1: Entry,
+  entry2: Entry,
   level: number,
   relativePath: string
 ): DifferenceEqual {
@@ -70,8 +70,8 @@ export function createEqualDifference(
 
 // TODO: maybe pass type1 and type2 as param?
 export function createDistinctDifference(
-  entry1: EntryNormal,
-  entry2: EntryNormal,
+  entry1: Entry,
+  entry2: Entry,
   level: number,
   relativePath: string
 ): DifferenceDistinct {

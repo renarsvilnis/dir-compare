@@ -18,15 +18,7 @@ import {
   filterEntry,
   fastPathJoin
 } from "./utils";
-import {
-  Entry,
-  SymlinkCache,
-  SearchOptions,
-  Difference,
-  CompareResult,
-  DifferenceType,
-  CompareFileResult
-} from "./types";
+import { Entry, SymlinkCache, SearchOptions, Difference, CompareResult, DifferenceType } from "./types";
 
 const statAsync = promisify(fs.stat);
 const readdirAsync = promisify(fs.readdir);
@@ -74,7 +66,7 @@ export default async function compareAsyncInternal({
   ]);
 
   const comparePromises: ReturnType<typeof compareAsyncInternal>[] = [];
-  const compareFilePromises: Promise<CompareFileResult>[] = [];
+  const compareFilePromises: Promise<void>[] = [];
 
   /**
    * Index of which entry from each group to process, once an entry from a group
@@ -91,8 +83,6 @@ export default async function compareAsyncInternal({
   while (i1 < entries1LengthCached || i2 < entries2LengthCached) {
     const entry1 = entries1[i1];
     const entry2 = entries2[i2];
-    const path1 = entry1 ? entry1.absolutePath : undefined;
-    const path2 = entry2 ? entry2.absolutePath : undefined;
     const fileStat1 = entry1 ? entry1.stat : undefined;
     const fileStat2 = entry2 ? entry2.stat : undefined;
     let type1: DifferenceType;
@@ -115,53 +105,56 @@ export default async function compareAsyncInternal({
       cmp = 1;
     }
 
+    // "dry method" because used in two spaces
+    const onSame = (isSame: boolean) =>
+      onDifference(
+        isSame
+          ? createEqualDifference(entry1, entry2, level, relativePath)
+          : createDistinctDifference(entry1, entry2, level, relativePath)
+      );
+
     // process entry
     if (cmp === 0) {
       // Both left/right exist and have the same name and type
       let same: boolean | undefined = undefined;
 
       if (type1 === "file") {
-        if (searchOptions.compareSize && fileStat1.size !== fileStat2.size) {
+        // TODO: maybe convert so that multiple compare "filters" can be applied,
+        // as now you need to choose compareSize or compareDate or
+        // compareContent, maybe user wants to compare everything
+        // TODO: fix type enforce
+        if (searchOptions.compareSize && fileStat1!.size !== fileStat2!.size) {
           same = false;
         } else if (
           searchOptions.compareDate &&
-          !sameDate(fileStat1.mtime, fileStat2.mtime, searchOptions.dateTolerance)
+          // TODO: fix type enforce
+          !sameDate(fileStat1!.mtime, fileStat2!.mtime, searchOptions.dateTolerance)
         ) {
           same = false;
         } else if (searchOptions.compareContent) {
-          const compareFile = async (entry1: Entry, entry2: Entry, type1: DifferenceType, type2: DifferenceType) => {
-            let isSame: boolean | undefined = undefined;
-            let error: Error | undefined = undefined;
-
-            try {
-              isSame = await searchOptions.compareFile(path1, fileStat1, path2, fileStat2, searchOptions);
-            } catch (errorLocal) {
-              error = errorLocal;
-            }
-
-            return {
-              entry1,
-              entry2,
-              isSame,
-              error,
-              type1,
-              type2
-            };
+          const compareFile = async (entry1: Entry, entry2: Entry) => {
+            const isSame = await searchOptions.compareFile(
+              entry1.absolutePath,
+              entry1.stat,
+              entry2.absolutePath,
+              entry2.stat,
+              searchOptions
+            );
+            onSame(isSame);
           };
 
-          compareFilePromises.push(compareFile(entry1, entry2, type1, type2));
+          compareFilePromises.push(compareFile(entry1, entry2));
         } else {
           same = true;
         }
+
+        // Folder
       } else {
         same = true;
       }
+
       if (same !== undefined) {
-        onDifference(
-          same
-            ? createEqualDifference(entry1, entry2, level, relativePath)
-            : createDistinctDifference(entry1, entry2, level, relativePath)
-        );
+        onSame(same);
       }
 
       i1++;
@@ -220,17 +213,7 @@ export default async function compareAsyncInternal({
       }
     }
 
-    await Promise.all(comparePromises);
-    const sameResults = await Promise.all(compareFilePromises);
-
-    for (let i = 0; i < sameResults.length; i++) {
-      const sameResult = sameResults[i];
-      if (sameResult.error) {
-        throw new Error(sameResult.error);
-      }
-
-      onDifference(createEntry(sameResult.entry1, sameResult.entry2, sameResult.same, level, relativePath));
-    }
+    await Promise.all([...comparePromises, ...compareFilePromises]);
   }
 }
 
@@ -243,7 +226,7 @@ async function getEntries(
   searchOptions: SearchOptions,
   loopDetected: boolean
 ): Promise<Entry[]> {
-  if (!absolutePath || loopDetected) {
+  if (!absolutePath || !path || loopDetected) {
     return [];
   }
 
@@ -254,7 +237,9 @@ async function getEntries(
     return buildEntries(absolutePath, path, rawEntries, searchOptions);
   } else {
     const name = pathUtils.basename(absolutePath);
-    return [{ name, absolutePath, path, stat }];
+    const lstat = await lstatAsync(absolutePath);
+    const isSymlink = lstat.isSymbolicLink();
+    return [{ name, absolutePath, path, stat, lstat, isSymlink }];
   }
 }
 
@@ -269,14 +254,6 @@ async function buildEntries(
   );
   const filteredEntries = entries.filter(entry => filterEntry(entry, searchOptions));
 
-  // // TODO: Maybe use Array.filter() method
-  // const filteredEntries: Entry[] = [];
-  // entries.forEach((entry) => {
-  //   if (filterEntry(entry, searchOptions)) {
-  //     filteredEntries.push(entry);
-  //   }
-  // });
-
   return searchOptions.ignoreCase
     ? filteredEntries.sort(compareEntryIgnoreCase)
     : filteredEntries.sort(compareEntryCaseSensitive);
@@ -286,14 +263,20 @@ async function buildEntry(
   absolutePath: string,
   path: string,
   entryName: string,
-  options: SearchOptions
+  searchOptions: SearchOptions
 ): Promise<Entry> {
   const entryAbsolutePath = fastPathJoin(absolutePath, entryName);
   const entryPath = fastPathJoin(path, entryName);
 
-  const lstat = await lstatAsync(entryAbsolutePath);
+  // const lstat = await lstatAsync(entryAbsolutePath);
+  // const isSymlink = lstat.isSymbolicLink();
+
+  // Memory usage optimization if user doesn't want to follow symlinks
+  // const stat = searchOptions.skipSymlinks && isSymlink ? undefined : await statAsync(entryAbsolutePath);
+
+  // TODO: for now disable the optimization to make types easier
+  const [lstat, stat] = await Promise.all([lstatAsync(entryAbsolutePath), statAsync(entryAbsolutePath)]);
   const isSymlink = lstat.isSymbolicLink();
-  const stat = options.skipSymlinks && isSymlink ? undefined : await statAsync(entryAbsolutePath);
 
   return {
     name: entryName,

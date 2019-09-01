@@ -22,6 +22,9 @@ export interface CreateEntryOptions {
 export type CompareResult = 0 | -1 | 1;
 
 export interface SearchOptions {
+  // TODO: improve search options as file compare takes only one option in the
+  // following order compareSize -> compareDate -> compareContent
+
   /**
    * Compares files by size. Defaults to 'false'.
    */
@@ -83,29 +86,7 @@ export interface Results {
   differences: Difference[];
 }
 
-// TODO: maybe separate entry by type?
-export interface EntryNormal {
-  name: string;
-  absolutePath: string;
-  path: string;
-  stat: fs.Stats;
-  lstat: fs.Stats;
-  isSymlink: false;
-}
-
-export interface EntrySymlink {
-  name: string;
-  absolutePath: string;
-  path: string;
-  stat: undefined;
-  lstat: fs.Stats;
-  isSymlink: true;
-}
-
-// Every property is looked-up on for the initial a.k.a root compare
-// TODO: figure out does root really need to lookup everything or should also
-// take in options such as skipSymlinks etc.
-export interface EntryRoot {
+export interface Entry {
   name: string;
   absolutePath: string;
   path: string;
@@ -113,31 +94,6 @@ export interface EntryRoot {
   lstat: fs.Stats;
   isSymlink: boolean;
 }
-
-export type Entry = EntryNormal | EntrySymlink | EntryRoot;
-export type EntryNonRoot = EntryNormal | EntrySymlink;
-
-export interface CompareFileResult {
-  entry1: Entry;
-  entry2: Entry;
-  isSame?: boolean;
-  error?: Error;
-  type1: DifferenceType;
-  type2: DifferenceType;
-}
-
-// export interface EntryValid {
-//   name: string;
-//   absolutePath: string;
-//   path: string;
-//   stat: undefined;
-//   lstat: undefined;
-//   isSymlink: boolean;
-// }
-
-// export interface EntryMissing {
-
-// }
 
 /**
  * Output format:

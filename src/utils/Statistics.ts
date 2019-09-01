@@ -1,7 +1,7 @@
 import { StatisticResults, Difference } from "../types";
 
 export default class Statistics {
-  private statisics: StatisticResults = {
+  private statistics: StatisticResults = {
     total: 0,
     distinct: 0,
     equal: 0,
@@ -29,7 +29,7 @@ export default class Statistics {
   };
 
   addDifference(difference: Difference): void {
-    // TODO: implment statistics
+    // TODO: implement statistics
     //   same ? statistics.equal++ : statistics.distinct++;
     //   if (type1 === "file") {
     //     same ? statistics.equalFiles++ : statistics.distinctFiles++;
@@ -46,6 +46,6 @@ export default class Statistics {
   }
 
   toObject(): StatisticResults {
-    return this.statisics;
+    return this.statistics;
   }
 }

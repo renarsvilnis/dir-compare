@@ -1,17 +1,12 @@
 import * as fs from "fs";
 import minimatch from "minimatch";
 import path from "path";
+import { promisify } from "util";
 
-import {
-  Entry,
-  EntryRoot,
-  SearchOptions,
-  SymlinkCache,
-  SymlinkCacheGroup,
-  CompareResult,
-  EntryNormal,
-  EntryNonRoot
-} from "./types";
+import { Entry, SearchOptions, SymlinkCache, SymlinkCacheGroup, CompareResult } from "./types";
+
+const statAsync = promisify(fs.stat);
+const lstatAsync = promisify(fs.lstat);
 
 // Instead of shallow copy
 // https://stackoverflow.com/a/10916838/1378261
@@ -20,7 +15,7 @@ import {
 //   return v8.deserialize(v8.serialize(obj));
 // };
 
-// TODO: libary previously used this over path.join, assuming for speed, but
+// TODO: library previously used this over path.join, assuming for speed, but
 // need to test it
 export function fastPathJoin(root: string, entryName: string) {
   return root + path.sep + entryName;
@@ -28,6 +23,7 @@ export function fastPathJoin(root: string, entryName: string) {
 
 export function detectLoop(entry: Entry | undefined, symlinkCacheGroup: SymlinkCacheGroup) {
   if (entry && entry.isSymlink) {
+    // TODO: why is it sync, maybe make it async after implementing tests
     const realPath = fs.realpathSync(entry.absolutePath);
     if (symlinkCacheGroup[realPath]) {
       return true;
@@ -50,10 +46,27 @@ export function symlinkCacheFactory(): SymlinkCache {
   };
 }
 
-export function entryRootFactory(absolutePath: string, path: string, name: string): EntryRoot {
+// export function entryRootFactory(absolutePath: string, path: string, name: string): EntryRoot {
+//   // TODO: make it async?
+//   const statEntry = fs.statSync(absolutePath);
+//   const lstatEntry = fs.lstatSync(absolutePath);
+//   return {
+//     name: name,
+//     absolutePath: absolutePath,
+//     path: path,
+//     stat: statEntry,
+//     lstat: lstatEntry,
+//     isSymlink: lstatEntry.isSymbolicLink()
+//   };
+// }
+
+export async function entryRootFactory(absolutePath: string, path: string, name: string): Promise<Entry> {
   // TODO: make it async?
-  const statEntry = fs.statSync(absolutePath);
-  const lstatEntry = fs.lstatSync(absolutePath);
+  // const statEntry = fs.statSync(absolutePath);
+  // const lstatEntry = fs.lstatSync(absolutePath);
+
+  const [statEntry, lstatEntry] = await Promise.all([statAsync(absolutePath), lstatAsync(absolutePath)]);
+
   return {
     name: name,
     absolutePath: absolutePath,
@@ -97,7 +110,7 @@ export function match(fileName: string, pattern: string): boolean {
 /**
  * Filter entries by file name. Returns true if the file is to be processed.
  */
-export function filterEntry(entry: EntryNonRoot, options: SearchOptions): boolean {
+export function filterEntry(entry: Entry, options: SearchOptions): boolean {
   if (entry.isSymlink && options.skipSymlinks) {
     return false;
   }
@@ -115,30 +128,30 @@ export function filterEntry(entry: EntryNonRoot, options: SearchOptions): boolea
 /**
  * Comparator for directory entries sorting.
  */
-export function compareEntryCaseSensitive(a: EntryNormal, b: EntryNormal): CompareResult {
+export function compareEntryCaseSensitive(a: Entry, b: Entry): CompareResult {
   if (a.stat.isDirectory() && b.stat.isFile()) {
     return -1;
   } else if (a.stat.isFile() && b.stat.isDirectory()) {
     return 1;
   } else {
     // http://stackoverflow.com/questions/1179366/is-there-a-javascript-strcmp
-    const str1 = a.name,
-      str2 = b.name;
+    const str1 = a.name;
+    const str2 = b.name;
     return str1 == str2 ? 0 : str1 > str2 ? 1 : -1;
   }
 }
 /**
  * Comparator for directory entries sorting.
  */
-export function compareEntryIgnoreCase(a: EntryNormal, b: EntryNormal): CompareResult {
+export function compareEntryIgnoreCase(a: Entry, b: Entry): CompareResult {
   if (a.stat.isDirectory() && b.stat.isFile()) {
     return -1;
   } else if (a.stat.isFile() && b.stat.isDirectory()) {
     return 1;
   } else {
     // http://stackoverflow.com/questions/1179366/is-there-a-javascript-strcmp
-    const str1 = a.name.toLowerCase(),
-      str2 = b.name.toLowerCase();
+    const str1 = a.name.toLowerCase();
+    const str2 = b.name.toLowerCase();
     return str1 == str2 ? 0 : str1 > str2 ? 1 : -1;
   }
 }

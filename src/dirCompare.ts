@@ -19,6 +19,7 @@ export default async function dirCompare(path1: string, path2: string, options: 
   const absolutePath2 = pathUtils.normalize(pathUtils.resolve(realPath2));
 
   const statistics = new Statistics();
+  // TODO: improve prepareOptions
   options = prepareOptions(options);
 
   const differences: Difference[] = [];
@@ -30,11 +31,19 @@ export default async function dirCompare(path1: string, path2: string, options: 
     differences.push(difference);
   };
 
+  // TODO: verify if the async entryRootFactory method works as expected after tests
+  const [rootEntry1, rootEntry2] = await Promise.all([
+    entryRootFactory(absolutePath1, path1, pathUtils.basename(path1)),
+    entryRootFactory(absolutePath2, path2, pathUtils.basename(path2))
+  ]);
+
   // TODO: implement progress, need to figure out how to get totalCount before
   // and also take care of options
   await compareAsync({
-    rootEntry1: entryRootFactory(absolutePath1, path1, pathUtils.basename(path1)),
-    rootEntry2: entryRootFactory(absolutePath2, path2, pathUtils.basename(path2)),
+    // rootEntry1: entryRootFactory(absolutePath1, path1, pathUtils.basename(path1)),
+    // rootEntry2: entryRootFactory(absolutePath2, path2, pathUtils.basename(path2)),
+    rootEntry1,
+    rootEntry2,
     level: 0,
     relativePath: "",
     searchOptions: options,
