@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gliviu/dir-compare"
+    "url": "https://github.com/renarsvilnis/dir-compare"
   },
   "keywords": [
     "compare",
@@ -27,14 +27,15 @@
     "@types/minimatch": "3.0.3",
     "@types/node": "12.7.3",
     "@types/tar-fs": "1.16.1",
+    "@types/temp": "0.8.34",
     "istanbul": "0.4.5",
     "jest": "24.9.0",
     "memory-streams": "0.1.3",
     "semver": "5.6.0",
-    "shelljs": "0.3.0",
     "tar-fs": "2.0.0",
     "temp": "0.9.0",
     "ts-jest": "24.0.2",
+    "ts-node": "8.3.0",
     "typescript": "3.6.2"
   },
   "bin": {
@@ -42,13 +43,15 @@
   },
   "scripts": {
     "pretest": "tsc -p tsconfig.json",
-    "test": "jest ./src",
-    "test:old": "istanbul cover tests/runTests.js",
+    "test": "jest ./src --collect-coverage",
+    "test:watch": "jest ./src --collect-coverage --watch",
+    "test:alt": "ts-node tests/runTests.ts",
+    "test:old": "istanbul cover tests/runTests.ts",
     "build": "tsc"
   },
-  "author": "Liviu Grigorescu",
+  "author": "Renārs Vilnis",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gliviu/dir-compare/issues"
+    "url": "https://github.com/renarsvilnis/dir-compare/issues"
   }
 }

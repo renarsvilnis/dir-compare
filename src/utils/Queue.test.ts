@@ -1,6 +1,6 @@
 import Queue from "./Queue";
 
-test("Normal usage", () => {
+test("Happy path", () => {
   expect.assertions(6);
 
   const queue = new Queue(100);

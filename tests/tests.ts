@@ -1,7 +1,7 @@
+import util from 'util';
+
 import { Options } from "../src/types";
 import dircompare, {lineCompare} from '../src';
-var lineCompare = require('../index').fileCompareHandlers.lineBasedFileCompare
-var util = require('util');
 
 export interface DisplayOptions {
     showAll: boolean,

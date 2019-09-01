@@ -207,7 +207,7 @@ export interface StatisticResults {
   /**
    * true if directories are identical.
    */
-  same: boolean;
+  isSame: boolean;
 
   /**
    * Total difference count

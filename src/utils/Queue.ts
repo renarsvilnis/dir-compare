@@ -8,7 +8,7 @@ export default class Queue<Item> {
   maxUnusedArraySize: number;
 
   constructor(maxUnusedArraySize: number) {
-    // TODO: does maxUnusedArraySize inmprove performance?
+    // TODO: does maxUnusedArraySize improve performance?
     this.maxUnusedArraySize = maxUnusedArraySize;
   }
 

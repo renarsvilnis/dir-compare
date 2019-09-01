@@ -3,46 +3,102 @@ import { StatisticResults, Difference } from "../types";
 export default class Statistics {
   private statistics: StatisticResults = {
     total: 0,
-    distinct: 0,
-    equal: 0,
-    left: 0,
-    right: 0,
-
     totalFiles: 0,
-    distinctFiles: 0,
-    equalFiles: 0,
-    leftFiles: 0,
-    rightFiles: 0,
-
     totalDirs: 0,
-    distinctDirs: 0,
+
+    equal: 0,
+    equalFiles: 0,
     equalDirs: 0,
-    leftDirs: 0,
-    rightDirs: 0,
 
-    same: true,
-
-    // TODO: add different statistics
     differences: 0,
     differencesFiles: 0,
-    differencesDirs: 0
+    differencesDirs: 0,
+
+    distinct: 0,
+    distinctFiles: 0,
+    distinctDirs: 0,
+
+    left: 0,
+    leftFiles: 0,
+    leftDirs: 0,
+
+    right: 0,
+    rightFiles: 0,
+    rightDirs: 0,
+
+    // True until proven different
+    isSame: true
   };
 
   addDifference(difference: Difference): void {
-    // TODO: implement statistics
-    //   same ? statistics.equal++ : statistics.distinct++;
-    //   if (type1 === "file") {
-    //     same ? statistics.equalFiles++ : statistics.distinctFiles++;
-    //   } else {
-    //     same ? statistics.equalDirs++ : statistics.distinctDirs++;
-    //   }
-    // statistics.differences = statistics.distinct + statistics.left + statistics.right;
-    // statistics.differencesFiles = statistics.distinctFiles + statistics.leftFiles + statistics.rightFiles;
-    // statistics.differencesDirs = statistics.distinctDirs + statistics.leftDirs + statistics.rightDirs;
-    // statistics.total = statistics.equal + statistics.differences;
-    // statistics.totalFiles = statistics.equalFiles + statistics.differencesFiles;
-    // statistics.totalDirs = statistics.equalDirs + statistics.differencesDirs;
-    // statistics.same = statistics.differences ? false : true;
+    this.statistics.total++;
+
+    switch (difference.state) {
+      case "equal": {
+        this.statistics.equal++;
+
+        if (difference.type1 === "file") {
+          this.statistics.totalFiles++;
+          this.statistics.equalFiles++;
+        } else {
+          this.statistics.totalDirs++;
+          this.statistics.equalDirs++;
+        }
+
+        break;
+      }
+      case "distinct": {
+        this.statistics.differences++;
+        this.statistics.distinct++;
+
+        if (difference.type1 === "file") {
+          this.statistics.totalFiles++;
+          this.statistics.differencesFiles++;
+          this.statistics.distinctFiles++;
+        } else {
+          this.statistics.totalDirs++;
+          this.statistics.differencesDirs++;
+          this.statistics.distinctDirs++;
+        }
+
+        this.statistics.isSame = false;
+        break;
+      }
+      case "left": {
+        this.statistics.differences++;
+        this.statistics.left++;
+
+        if (difference.type1 === "file") {
+          this.statistics.totalFiles++;
+          this.statistics.differencesFiles++;
+          this.statistics.leftFiles++;
+        } else {
+          this.statistics.totalDirs++;
+          this.statistics.differencesDirs++;
+          this.statistics.leftDirs++;
+        }
+
+        this.statistics.isSame = false;
+        break;
+      }
+      case "right": {
+        this.statistics.differences++;
+        this.statistics.right++;
+
+        if (difference.type2 === "file") {
+          this.statistics.totalFiles++;
+          this.statistics.differencesFiles++;
+          this.statistics.rightFiles++;
+        } else {
+          this.statistics.totalDirs++;
+          this.statistics.differencesDirs++;
+          this.statistics.rightDirs++;
+        }
+
+        this.statistics.isSame = false;
+        break;
+      }
+    }
   }
 
   toObject(): StatisticResults {
