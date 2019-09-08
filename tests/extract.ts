@@ -2,14 +2,14 @@ import path from "path";
 
 import untar from "./untar";
 
-const outdir = path.join(__dirname, "testdir");
-const outname = "testdir.tar";
+const outputDirectory = path.join(__dirname, "testdir");
+const outputName = "testdir.tar";
 
 untar(
-  path.join(__dirname, outname),
-  outdir,
+  path.join(__dirname, outputName),
+  outputDirectory,
   () => {
-    console.log("Extracted test data into:", outdir);
+    console.log("Extracted test data into:", outputDirectory);
   },
   (err: Error) => {
     console.log("Error occurred: ", err);

@@ -63,12 +63,12 @@ export interface SearchOptions {
   /**
    * File name filter. Comma separated [minimatch](https://www.npmjs.com/package/minimatch) patterns.
    */
-  includeFilter: string;
+  includeFilter?: string;
 
   /**
    * File/directory name exclude filter. Comma separated [minimatch](https://www.npmjs.com/package/minimatch) patterns.
    */
-  excludeFilter: string;
+  excludeFilter?: string;
 
   /**
    * File comparison handler.

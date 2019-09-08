@@ -100,7 +100,7 @@ export function match(fileName: string, pattern: string): boolean {
   for (let i = 0; i < patternArray.length; i++) {
     const pat = patternArray[i];
     if (minimatch(fileName, pat, { dot: true })) {
-      //nocase
+      // no case
       return true;
     }
   }

@@ -3,8 +3,8 @@ import * as fs from "fs";
 import { promisify } from "util";
 
 import compareAsync from "./compareAsync";
-import defaultFileCompare from "./fileCompareHandlers/defaultFileCompare";
-import { entryRootFactory, symlinkCacheFactory, isNumericLike } from "./utils";
+// import defaultFileCompare from "./fileCompareHandlers/defaultFileCompare";
+import { entryRootFactory, symlinkCacheFactory /*isNumericLike*/ } from "./utils";
 import Statistics from "./utils/Statistics";
 
 const realpathAsync = promisify(fs.realpath);
@@ -18,16 +18,17 @@ export default async function dirCompare(path1: string, path2: string, options: 
   const absolutePath1 = pathUtils.normalize(pathUtils.resolve(realPath1));
   const absolutePath2 = pathUtils.normalize(pathUtils.resolve(realPath2));
 
+  // TODO: make optional?
   const statistics = new Statistics();
-  // TODO: improve prepareOptions
-  options = prepareOptions(options);
+  // // TODO: improve prepareOptions
+  // options = prepareOptions(options);
 
   const differences: Difference[] = [];
 
   const symlinkCache = symlinkCacheFactory();
 
   const onDifference = (difference: Difference) => {
-    // statistics.addDifference(difference);
+    statistics.addDifference(difference);
     differences.push(difference);
   };
 
@@ -55,16 +56,16 @@ export default async function dirCompare(path1: string, path2: string, options: 
 }
 
 // TODO: improve
-function prepareOptions(options: SearchOptions): SearchOptions {
-  options = options || {};
+// function prepareOptions(options: SearchOptions): SearchOptions {
+//   options = options || {};
 
-  // TODO: should it just use the util.clone? See that it doesn't copy methods!
-  const clone = JSON.parse(JSON.stringify(options));
-  clone.compareFile = options.compareFile || defaultFileCompare;
-  clone.dateTolerance = clone.dateTolerance ? Number(clone.dateTolerance) : 1000;
+//   // TODO: should it just use the util.clone? See that it doesn't copy methods!
+//   const clone = JSON.parse(JSON.stringify(options));
+//   clone.compareFile = options.compareFile || defaultFileCompare;
+//   clone.dateTolerance = clone.dateTolerance ? Number(clone.dateTolerance) : 1000;
 
-  if (isNumericLike(clone.dateTolerance)) {
-    throw new Error("Date tolerance is not a number");
-  }
-  return clone;
-}
+//   if (isNumericLike(clone.dateTolerance)) {
+//     throw new Error("Date tolerance is not a number");
+//   }
+//   return clone;
+// }

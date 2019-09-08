@@ -2,12 +2,12 @@ import fs from "fs";
 import temp from "temp";
 
 import { getTests, Test } from "./tests";
-import dirCompare from "../src";
+import dirCompare, { DEFAULT_OPTIONS } from "../src";
 import untar from "./untar";
 
 let failed = 0;
 
-// Automatically track and cleanup files at exit
+// Automatically track and clean up files at exit
 temp.track();
 
 //Matches date (ie 2014-11-18T21:32:39.000Z)
@@ -53,7 +53,8 @@ function testAsync(test: Test, testDirPath: string) {
   //   });
   // }
 
-  const promise = dirCompare(path1, path2, test.options).then(result => ({
+  const options = { ...DEFAULT_OPTIONS, ...test.options };
+  const promise = dirCompare(path1, path2, options).then(result => ({
     output: result
   }));
 
