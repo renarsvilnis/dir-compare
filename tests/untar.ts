@@ -2,11 +2,16 @@ import tar from "tar-fs";
 import fs from "fs";
 import path from "path";
 
+// @types/tar-js missing Headers.linkname string property
+interface FixedHeaders extends tar.Headers {
+  linkname: string;
+}
+
 export default function untar(tarFile: string, output: string, onExtracted: () => void, onError: (err: Error) => void) {
   const extractLinks = () => {
     const linkExtractor = tar
       .extract(output, {
-        ignore: (name, header) => {
+        ignore: (name, header: FixedHeaders) => {
           // use the 'ignore' handler for symlink creation.
           if (header && header.type === "symlink") {
             let target;
@@ -15,7 +20,7 @@ export default function untar(tarFile: string, output: string, onExtracted: () =
               target = path.join(output, path.dirname(header.name), header.linkname);
             } else {
               // Relative symlinks
-              target = header.linkname;
+              target = header.linkname as string;
             }
 
             const linkPath = path.join(output, header.name);
