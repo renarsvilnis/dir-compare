@@ -1,15 +1,5 @@
-import util from "util";
-
 import { SearchOptions } from "../src/types";
 import { fileCompareHandlers } from "../src";
-
-export interface DisplayOptions {
-  showAll: boolean;
-  wholeReport: boolean;
-  nocolors: boolean;
-  csv: boolean;
-  noDiffIndicator: boolean;
-}
 
 export interface Test {
   // Test name. This represents also the name of the file holding expected result unless overridden by 'expected' param.
@@ -24,8 +14,6 @@ export interface Test {
   withRelativePath?: boolean;
   // Options sent to library test. Should match 'commandLineOptions.
   options?: Partial<SearchOptions>;
-  // Display parameters for print method.
-  // displayOptions?: Partial<DisplayOptions>;
 
   // TODO: remove
   // Options sent to command line test. Should match 'options'.
@@ -42,7 +30,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -51,7 +38,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true },
-      // displayOptions: { showAll: true, wholeReport: true, csv: true, nocolors: true },
       commandLineOptions: "-aw --csv",
       exitCode: 1
     },
@@ -60,7 +46,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d3",
       path2: "d4",
       options: { compareSize: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -69,7 +54,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d4",
       path2: "d4",
       options: { compareSize: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -78,7 +62,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d8",
       path2: "d9",
       options: { compareSize: true },
-      // displayOptions: { showAll: true, nocolors: true },
       commandLineOptions: "-a",
       exitCode: 1
     },
@@ -87,7 +70,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d8",
       path2: "d9",
       options: { compareSize: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -96,7 +78,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true },
-      // displayOptions: { nocolors: true },
       commandLineOptions: "",
       exitCode: 1
     },
@@ -106,7 +87,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d2/a1.txt",
       description: "should compare two files",
       options: { compareSize: true },
-      // displayOptions: { nocolors: true },
       commandLineOptions: "",
       exitCode: 0
     },
@@ -125,7 +105,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d6",
       path2: "d7",
       options: { compareSize: true, includeFilter: "*.e1" },
-      // displayOptions: { showAll: true, nocolors: true },
       commandLineOptions: '-a -f "*.e1"',
       exitCode: 1
     },
@@ -134,7 +113,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d10",
       options: { compareSize: true, excludeFilter: ".x" },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw -x .x",
       exitCode: 1
     },
@@ -143,7 +121,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d6",
       path2: "d7",
       options: { compareSize: true, includeFilter: "*.e1" },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: '-aw -f "*.e1"',
       exitCode: 1
     },
@@ -152,7 +129,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true, excludeFilter: "*.txt" },
-      // displayOptions: { showAll: true, nocolors: true },
       commandLineOptions: '-a -x "*.txt"',
       exitCode: 1
     },
@@ -161,7 +137,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true, excludeFilter: "*.txt" },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: '-aw -x "*.txt"',
       exitCode: 1
     },
@@ -170,7 +145,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d6",
       path2: "d7",
       options: { compareSize: true, excludeFilter: "*.e1,*.e2" },
-      // displayOptions: { showAll: true, nocolors: true },
       commandLineOptions: '-a -x "*.e1,*.e2"',
       exitCode: 1
     },
@@ -179,7 +153,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d6",
       path2: "d7",
       options: { compareSize: true, excludeFilter: "*.e1,*.e2" },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: '-aw -x "*.e1,*.e2"',
       exitCode: 1
     },
@@ -194,7 +167,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d11",
       path2: "d12",
       options: { compareSize: true, compareContent: true },
-      // displayOptions: { showAll: true, nocolors: true },
       commandLineOptions: "-ac",
       exitCode: 1
     },
@@ -203,7 +175,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true, compareContent: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awc",
       exitCode: 1
     },
@@ -299,7 +270,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d13",
       path2: "d14",
       options: { compareSize: true, skipSymlinks: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awL",
       exitCode: 1
     },
@@ -308,7 +278,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d17",
       path2: "d17",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -318,7 +287,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d17",
       withRelativePath: true,
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -327,7 +295,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d17",
       path2: "d17",
       options: { compareSize: true, ignoreCase: true, skipSymlinks: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awL",
       exitCode: 0
     },
@@ -336,7 +303,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d17",
       path2: "d18",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -345,7 +311,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d22",
       path2: "d22",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -354,7 +319,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d19",
       path2: "d19",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -364,7 +328,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d19",
       withRelativePath: true,
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -373,7 +336,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d19",
       path2: "d19",
       options: { compareSize: true, ignoreCase: true, skipSymlinks: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awL",
       exitCode: 0
     },
@@ -382,7 +344,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d20",
       path2: "d20",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -391,7 +352,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d21",
       path2: "d21",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -400,7 +360,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d20",
       path2: "d21",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -409,7 +368,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d21",
       path2: "d20",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -418,7 +376,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d20",
       path2: "d22",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -427,7 +384,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d22",
       path2: "d20",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -437,7 +393,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d23",
       description: "be able to compare symlinks to files",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -446,7 +401,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d24",
       path2: "d24",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -456,7 +410,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d25",
       description: "do not fail when missing symlinks are encountered",
       options: { compareSize: true, ignoreCase: true, skipSymlinks: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw --skip-symlinks",
       exitCode: 0
     },
@@ -466,7 +419,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d27",
       description: "detect symbolic link loops; loops span between left/right directories",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -476,7 +428,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d28",
       description: "detect symbolic link loops; loop back to root directory",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -486,7 +437,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d30",
       description: "compare two symlinks",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -495,7 +445,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d34_symlink/d",
       path2: "d34_symlink/d",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -508,7 +457,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true, skipSubdirectories: true },
-      // displayOptions: { showAll: true, nocolors: true },
       commandLineOptions: "-aS",
       exitCode: 1
     },
@@ -517,7 +465,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1",
       path2: "d2",
       options: { compareSize: true, skipSubdirectories: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awS",
       exitCode: 1
     },
@@ -529,7 +476,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d15",
       path2: "d16",
       options: { compareSize: true, ignoreCase: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awi",
       exitCode: 0
     },
@@ -538,7 +484,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d15",
       path2: "d16",
       options: { compareSize: true, ignoreCase: false },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 1
     },
@@ -551,7 +496,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d2",
       expected: "total: 17, equal: 3, distinct: 0, only left: 7, only right: 7",
       options: {}
-      // displayOptions: { wholeReport: true, nocolors: true, noDiffIndicator: true }
     },
     {
       name: "test008_2",
@@ -559,15 +503,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d2",
       expected: "total: 17, equal: 3, distinct: 0, only left: 7, only right: 7",
       options: undefined
-      // displayOptions: { wholeReport: true, nocolors: true, noDiffIndicator: true }
-    },
-    {
-      name: "test008_3",
-      path1: "d1",
-      path2: "d2",
-      expected: "total: 17, equal: 3, distinct: 0, only left: 7, only right: 7",
-      options: {}
-      // displayOptions: { wholeReport: true, nocolors: true, noDiffIndicator: true }
     },
     ////////////////////////////////////////////////////
     // Compare date                                   //
@@ -577,7 +512,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d31",
       path2: "d32",
       options: { compareSize: true, compareDate: false },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-aw",
       exitCode: 0
     },
@@ -586,7 +520,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d31",
       path2: "d32",
       options: { compareSize: true, compareDate: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awD",
       exitCode: 1
     },
@@ -595,7 +528,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d31",
       path2: "d32",
       options: { compareSize: true, compareDate: false, compareContent: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awc",
       exitCode: 1
     },
@@ -604,7 +536,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d31",
       path2: "d32",
       options: { compareSize: true, compareDate: true, compareContent: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awcD",
       exitCode: 1
     },
@@ -614,7 +545,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d33/2",
       description: "should correctly use tolerance in date comparison",
       options: { compareSize: true, compareDate: true, dateTolerance: 5000 },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awD --date-tolerance 5000",
       exitCode: 1
     },
@@ -624,7 +554,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d33/2",
       description: "should correctly use tolerance in date comparison",
       options: { compareSize: true, compareDate: true, dateTolerance: 9000 },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awD --date-tolerance 9000",
       exitCode: 0
     },
@@ -634,7 +563,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d33/2",
       description: "should default to 1000 ms for date tolerance",
       options: { compareSize: true, compareDate: true },
-      // displayOptions: { showAll: true, wholeReport: true, nocolors: true },
       commandLineOptions: "-awD",
       exitCode: 1
     },
@@ -651,7 +579,6 @@ export function getTests(testDirPath: string): Test[] {
         compareFile: fileCompareHandlers.lineBasedFileCompare,
         ignoreLineEnding: true
       }
-      // displayOptions: { nocolors: true }
     },
     {
       name: "test011_2",
@@ -663,7 +590,6 @@ export function getTests(testDirPath: string): Test[] {
         compareFile: fileCompareHandlers.lineBasedFileCompare,
         ignoreLineEnding: false
       }
-      // displayOptions: { nocolors: true }
     },
     {
       name: "test011_3",
@@ -675,7 +601,6 @@ export function getTests(testDirPath: string): Test[] {
         compareFile: fileCompareHandlers.lineBasedFileCompare,
         ignoreWhiteSpaces: true
       }
-      // displayOptions: { nocolors: true }
     },
     {
       name: "test011_4",
@@ -688,7 +613,6 @@ export function getTests(testDirPath: string): Test[] {
         ignoreLineEnding: true,
         ignoreWhiteSpaces: true
       }
-      // displayOptions: { nocolors: true }
     },
     {
       name: "test011_5",
@@ -700,7 +624,6 @@ export function getTests(testDirPath: string): Test[] {
         compareFile: fileCompareHandlers.lineBasedFileCompare,
         ignoreWhiteSpaces: false
       }
-      // displayOptions: { nocolors: true }
     },
     {
       name: "test011_6",
@@ -712,7 +635,6 @@ export function getTests(testDirPath: string): Test[] {
         compareFile: fileCompareHandlers.lineBasedFileCompare,
         ignoreWhiteSpaces: true
       }
-      // displayOptions: { nocolors: true }
     },
     {
       name: "test011_7",
@@ -724,7 +646,6 @@ export function getTests(testDirPath: string): Test[] {
         compareFile: fileCompareHandlers.lineBasedFileCompare,
         ignoreWhiteSpaces: true
       }
-      // displayOptions: { nocolors: true }
     },
     ////////////////////////////////////////////////////
     // Relative paths                                 //

@@ -5,6 +5,7 @@ import { promisify } from "util";
 
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
 import BufferPool, { BufferPoolEntry } from "../utils/BufferPool";
+import { SearchOptions } from "../types";
 
 const MAX_CONCURRENT_FILE_COMPARE = 8;
 const BUF_SIZE = 100000;
@@ -22,7 +23,9 @@ export default function defaultFileCompare(
   stat1: Stats,
   path2: string,
   stat2: Stats,
-  options?: {}
+  // TODO: add only needed options
+  // options?: {}
+  options: SearchOptions
 ): Promise<boolean> {
   let fd1: number | undefined;
   let fd2: number | undefined;

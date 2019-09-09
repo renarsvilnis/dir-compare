@@ -19,12 +19,15 @@
   },
   "devDependencies": {
     "@types/buffer-equal": "0.0.30",
+    "@types/deasync": "0.1.0",
     "@types/jest": "24.0.18",
     "@types/minimatch": "3.0.3",
     "@types/node": "12.7.4",
     "@types/tar-fs": "1.16.1",
     "@types/temp": "0.8.34",
+    "deasync": "0.1.15",
     "jest": "24.9.0",
+    "jest-each": "24.9.0",
     "tar-fs": "2.0.0",
     "temp": "0.9.0",
     "ts-jest": "24.0.2",
@@ -40,6 +43,7 @@
     "test:watch": "jest ./src --collect-coverage --watch",
     "test:alt": "ts-node tests/runTests.ts",
     "test:old": "istanbul cover tests/runTests.ts",
+    "test:run": "npx jest ./tests/runTests.test.ts --watch",
     "build": "tsc"
   },
   "author": "Renārs Vilnis",

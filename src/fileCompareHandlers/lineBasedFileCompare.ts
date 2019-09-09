@@ -9,6 +9,7 @@ import { promisify } from "util";
 import FileDescriptorQueue from "../utils/FileDescriptorQueue";
 import BufferPool from "../utils/BufferPool";
 import { BufferPoolEntry } from "../utils/BufferPool";
+import { SearchOptions } from "../types";
 
 const readAsync = promisify(fs.read);
 
@@ -27,7 +28,9 @@ export default function lineBasedFileCompare(
   stat1: Stats,
   path2: string,
   stat2: Stats,
-  options: LineBasedFileCompareOptions
+  // TODO: add only needed options
+  // options: LineBasedFileCompareOptions
+  options: SearchOptions
 ): Promise<boolean> {
   let fd1: number;
   let fd2: number;

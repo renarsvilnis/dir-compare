@@ -349,5 +349,5 @@ export type CompareFile = (
   stat1: fs.Stats,
   path2: string,
   stat2: fs.Stats,
-  options: Partial<SearchOptions>
+  options: SearchOptions
 ) => Promise<boolean>;

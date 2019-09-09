@@ -1,8 +1,8 @@
 [/] A11->missing
-[/] a1.txt==a1.txt
-[/] a2.txt<>a2.txt
-[/] a3.txt->missing
-[/] missing<-a4.txt
-[/] a5.txt->missing
+[/] a1.txt==a1.txt(file)
+[/] a2.txt<>a2.txt(file)
+[/] a3.txt->missing(file)
+[/] missing<-a4.txt(file)
+[/] a5.txt->missing(file)
 Entries are different
 total: 6, equal: 1, distinct: 1, only left: 3, only right: 1

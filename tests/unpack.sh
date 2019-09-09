@@ -1,2 +1,2 @@
 #!/bin/bash
-node extract.js
+npx ts-node ./tests/extract.ts
