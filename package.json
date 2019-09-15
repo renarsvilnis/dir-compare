@@ -1,6 +1,6 @@
 {
   "name": "@renarsvilnis/dir-compare",
-  "version": "1.7.3",
+  "version": "1.0.0",
   "description": "Node JS directory compare",
   "main": "src/index.js",
   "repository": {
@@ -11,6 +11,14 @@
     "compare",
     "directory",
     "folder"
+  ],
+  "files": [
+    "src",
+    "package-lock.json",
+    "package.json",
+    "README.md",
+    "tsconfig.json",
+    "LICENSE"
   ],
   "dependencies": {
     "buffer-equal": "1.0.0",
