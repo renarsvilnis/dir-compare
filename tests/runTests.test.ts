@@ -2,6 +2,7 @@ import fs from "fs";
 import temp from "temp";
 import each from "jest-each";
 import deasync from "deasync";
+// import {stripIndents} from 'common-tags'
 
 import { getTests, Test } from "./tests";
 import dirCompare, { DEFAULT_OPTIONS } from "../src";
@@ -44,7 +45,7 @@ function executeTests(testDirPath: string) {
     return [name, t] as [string, Test];
   });
 
-  each(tests).test("%s", async (name, testObj, done) => {
+  each(tests).test("%s", async (name: string, testObj: Test, done) => {
     expect.hasAssertions();
 
     process.chdir(testDirPath);
@@ -52,35 +53,14 @@ function executeTests(testDirPath: string) {
     const path1 = testObj.withRelativePath ? testObj.path1 : testDirPath + "/" + testObj.path1;
     const path2 = testObj.withRelativePath ? testObj.path2 : testDirPath + "/" + testObj.path2;
 
-    // let promise;
-    // if (test.runAsync) {
-    //   promise = test.runAsync().then((result) => {
-    //     return { output: result };
-    //   });
-    // } else {
-    //   promise = dirCompare(path1, path2, test.options).then((result) => {
-    //     const writer = new Streams.WritableStream();
-    //     const print = test.print ? test.print : defaultPrint;
-    //     print(result, writer, test.displayOptions);
-    //     const output = normalize(writer.toString()).trim();
-    //     return { output: output };
-    //   });
-    // }
-
     const options: SearchOptions = { ...DEFAULT_OPTIONS, ...testObj.options };
     const results = await dirCompare(path1, path2, options).then(result => ({
       output: result
     }));
 
-    // const output = result.output;
-    // const statisticsCheck = result.statisticsCheck;
     const expected = getExpected(testObj);
 
     const whatIGot = formatResultsForExpect(results.output);
-    // console.log(whatIGot);
-
-    // const res = expected === output && statisticsCheck;
-    // console.log(test.name + " async: " + passed(res));
 
     expect(whatIGot).toBe(expected);
 

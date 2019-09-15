@@ -19,7 +19,8 @@ export interface Test {
   // Options sent to command line test. Should match 'options'.
   commandLineOptions?: string;
   // // Command line expected exit code.
-  exitCode?: number;
+  // exitCode?: number;
+  exitCode?: 0 | 1;
   onlyCommandLine?: boolean;
 }
 
@@ -29,56 +30,37 @@ export function getTests(testDirPath: string): Test[] {
       name: "test001_1",
       path1: "d1",
       path2: "d2",
-      options: { compareSize: true },
-      commandLineOptions: "-aw",
-      exitCode: 1
-    },
-    {
-      name: "test001_2",
-      path1: "d1",
-      path2: "d2",
-      options: { compareSize: true },
-      commandLineOptions: "-aw --csv",
-      exitCode: 1
+      options: { compareSize: true }
     },
     {
       name: "test001_3",
       path1: "d3",
       path2: "d4",
-      options: { compareSize: true },
-      commandLineOptions: "-aw",
-      exitCode: 1
+      options: { compareSize: true }
     },
     {
       name: "test001_4",
       path1: "d4",
       path2: "d4",
-      options: { compareSize: true },
-      commandLineOptions: "-aw",
-      exitCode: 0
+      options: { compareSize: true }
     },
     {
       name: "test001_5",
       path1: "d8",
       path2: "d9",
-      options: { compareSize: true },
-      commandLineOptions: "-a",
-      exitCode: 1
+      options: { compareSize: true }
     },
     {
       name: "test001_6",
       path1: "d8",
       path2: "d9",
-      options: { compareSize: true },
-      commandLineOptions: "-aw",
-      exitCode: 1
+      options: { compareSize: true }
     },
     {
       name: "test001_8",
       path1: "d1",
       path2: "d2",
       options: { compareSize: true },
-      commandLineOptions: "",
       exitCode: 1
     },
     {
@@ -86,9 +68,7 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d1/a1.txt",
       path2: "d2/a1.txt",
       description: "should compare two files",
-      options: { compareSize: true },
-      commandLineOptions: "",
-      exitCode: 0
+      options: { compareSize: true }
     },
     {
       name: "test001_10",
@@ -179,90 +159,6 @@ export function getTests(testDirPath: string): Test[] {
       exitCode: 1
     },
     ////////////////////////////////////////////////////
-    // Command line                                   //
-    ////////////////////////////////////////////////////
-    {
-      name: "test004_0",
-      path1: "d11",
-      path2: "d11",
-      onlyCommandLine: true,
-      commandLineOptions: "",
-      exitCode: 0
-    },
-    {
-      name: "test004_1",
-      path1: "d11",
-      path2: "d12",
-      onlyCommandLine: true,
-      commandLineOptions: "-c",
-      exitCode: 1
-    },
-    {
-      name: "test004_2",
-      path1: "d11",
-      path2: "d11",
-      onlyCommandLine: true,
-      commandLineOptions: "--WRONGCMD ",
-      exitCode: 2
-    },
-    {
-      name: "test004_3",
-      path1: "d11",
-      path2: "",
-      onlyCommandLine: true,
-      commandLineOptions: "",
-      exitCode: 2
-    },
-    {
-      name: "test004_4",
-      path1: "d11",
-      path2: "miss",
-      onlyCommandLine: true,
-      commandLineOptions: "",
-      exitCode: 2
-    },
-    {
-      name: "test004_5",
-      path1: "d11",
-      path2: "d1",
-      onlyCommandLine: true,
-      commandLineOptions: "-ABCD",
-      exitCode: 2
-    },
-    {
-      name: "test004_6",
-      path1: "d11",
-      path2: "d1",
-      onlyCommandLine: true,
-      commandLineOptions: "-ABCD --csv",
-      exitCode: 2
-    },
-    {
-      name: "test004_7",
-      path1: "d11",
-      path2: "d1",
-      onlyCommandLine: true,
-      commandLineOptions: "--csv -ABCD --csv",
-      exitCode: 2
-    },
-    {
-      name: "test004_8",
-      path1: "d11",
-      path2: "d1",
-      onlyCommandLine: true,
-      commandLineOptions: "--csv -ABCD",
-      exitCode: 2
-    },
-    {
-      name: "test004_9",
-      path1: "d11",
-      path2: "d1",
-      onlyCommandLine: true,
-      commandLineOptions: "--ABC --async -x --async",
-      exitCode: 2
-    },
-
-    ////////////////////////////////////////////////////
     // Symlinks                                      //
     ////////////////////////////////////////////////////
     {
@@ -278,7 +174,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d17",
       path2: "d17",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -287,7 +182,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d17",
       withRelativePath: true,
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -303,7 +197,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d17",
       path2: "d18",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 1
     },
     {
@@ -311,7 +204,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d22",
       path2: "d22",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -319,7 +211,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d19",
       path2: "d19",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -328,7 +219,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d19",
       withRelativePath: true,
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -344,7 +234,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d20",
       path2: "d20",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -352,7 +241,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d21",
       path2: "d21",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -360,7 +248,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d20",
       path2: "d21",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 1
     },
     {
@@ -368,7 +255,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d21",
       path2: "d20",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 1
     },
     {
@@ -376,7 +262,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d20",
       path2: "d22",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 1
     },
     {
@@ -384,7 +269,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d22",
       path2: "d20",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 1
     },
     {
@@ -393,7 +277,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d23",
       description: "be able to compare symlinks to files",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -401,17 +284,14 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d24",
       path2: "d24",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
       name: "test005_15",
       path1: "d25",
       path2: "d25",
-      description: "do not fail when missing symlinks are encountered",
-      options: { compareSize: true, ignoreCase: true, skipSymlinks: true },
-      commandLineOptions: "-aw --skip-symlinks",
-      exitCode: 0
+      description: "do not fail when missing symlinks are encountered and skip",
+      options: { compareSize: true, ignoreCase: true, skipSymlinks: true }
     },
     {
       name: "test005_16",
@@ -419,7 +299,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d27",
       description: "detect symbolic link loops; loops span between left/right directories",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 1
     },
     {
@@ -428,7 +307,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d28",
       description: "detect symbolic link loops; loop back to root directory",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -437,7 +315,6 @@ export function getTests(testDirPath: string): Test[] {
       path2: "d30",
       description: "compare two symlinks",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {
@@ -445,7 +322,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d34_symlink/d",
       path2: "d34_symlink/d",
       options: { compareSize: true, ignoreCase: true },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
 
@@ -484,7 +360,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d15",
       path2: "d16",
       options: { compareSize: true, ignoreCase: false },
-      commandLineOptions: "-aw",
       exitCode: 1
     },
     ////////////////////////////////////////////////////
@@ -512,7 +387,6 @@ export function getTests(testDirPath: string): Test[] {
       path1: "d31",
       path2: "d32",
       options: { compareSize: true, compareDate: false },
-      commandLineOptions: "-aw",
       exitCode: 0
     },
     {

@@ -1,9 +1,10 @@
 import os from "os";
 
-import dircompare from "../../src";
+import dircompare, { DEFAULT_OPTIONS } from "../../src";
 import { Results } from "../../src/types";
 
 const options = {
+  ...DEFAULT_OPTIONS,
   compareContent: "true"
 };
 

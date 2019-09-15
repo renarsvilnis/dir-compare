@@ -90,7 +90,7 @@ export interface Entry {
   name: string;
   absolutePath: string;
   path: string;
-  stat: fs.Stats;
+  stat?: fs.Stats;
   lstat: fs.Stats;
   isSymlink: boolean;
 }

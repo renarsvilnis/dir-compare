@@ -12,6 +12,14 @@ const realpathAsync = promisify(fs.realpath);
 import { SearchOptions, Difference, Results } from "./types";
 
 export default async function dirCompare(path1: string, path2: string, options: SearchOptions): Promise<Results> {
+  if (!pathUtils.isAbsolute(path1)) {
+    throw new Error("path1 must be an absolute path");
+  }
+
+  if (!pathUtils.isAbsolute(path2)) {
+    throw new Error("path2 must be an absolute path");
+  }
+
   const [realPath1, realPath2] = await Promise.all([realpathAsync(path1), realpathAsync(path2)]);
 
   // realpath() is necessary for loop detection to work properly

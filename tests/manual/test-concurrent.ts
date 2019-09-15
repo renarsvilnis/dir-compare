@@ -1,15 +1,16 @@
 import os from "os";
 
-import dircompare from "../src";
+import dircompare, { DEFAULT_OPTIONS } from "../../src";
 
 const options = {
+  ...DEFAULT_OPTIONS,
   compareContent: true
 };
 
 const path1 = `/${os.tmpdir()}/linux-4.3`;
 const path2 = `/${os.tmpdir()}/linux-4.4`;
 
-let expected =
+const expected =
   '{"distinct":8543,"equal":46693,"left":792,"right":1755,"distinctFiles":8543,"equalFiles":43167,"leftFiles":750,"rightFiles":1639,"distinctDirs":0,"equalDirs":3526,"leftDirs":42,"rightDirs":116,"same":false,"differences":11090,"differencesFiles":10932,"differencesDirs":158,"total":57783,"totalFiles":54099,"totalDirs":3684}';
 
 const noTests = 5;

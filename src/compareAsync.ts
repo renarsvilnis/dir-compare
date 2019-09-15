@@ -133,11 +133,13 @@ export default async function compareAsyncInternal({
           same = false;
         } else if (searchOptions.compareContent) {
           const compareFile = async () => {
+            // TODO: improve code so that no need to force type entry1.stat! and
+            // entry2.stat!
             const isSame = await searchOptions.compareFile(
               entry1.absolutePath,
-              entry1.stat,
+              entry1.stat!,
               entry2.absolutePath,
-              entry2.stat,
+              entry2.stat!,
               searchOptions
             );
             onSame(isSame);
@@ -268,15 +270,15 @@ async function buildEntry(
   const entryAbsolutePath = fastPathJoin(absolutePath, entryName);
   const entryPath = fastPathJoin(path, entryName);
 
-  // const lstat = await lstatAsync(entryAbsolutePath);
-  // const isSymlink = lstat.isSymbolicLink();
+  const lstat = await lstatAsync(entryAbsolutePath);
+  const isSymlink = lstat.isSymbolicLink();
 
   // Memory usage optimization if user doesn't want to follow symlinks
-  // const stat = searchOptions.skipSymlinks && isSymlink ? undefined : await statAsync(entryAbsolutePath);
+  const stat = searchOptions.skipSymlinks && isSymlink ? undefined : await statAsync(entryAbsolutePath);
 
   // TODO: for now disable the optimization to make types easier
-  const [lstat, stat] = await Promise.all([lstatAsync(entryAbsolutePath), statAsync(entryAbsolutePath)]);
-  const isSymlink = lstat.isSymbolicLink();
+  // const [lstat, stat] = await Promise.all([lstatAsync(entryAbsolutePath), statAsync(entryAbsolutePath)]);
+  // const isSymlink = lstat.isSymbolicLink();
 
   return {
     name: entryName,

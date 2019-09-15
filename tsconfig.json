@@ -27,7 +27,7 @@
      * https://stackoverflow.com/a/51758340/1378261
      */
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "allowSyntheticDefaultImports": true
   },
   // "files": [
   // ],
