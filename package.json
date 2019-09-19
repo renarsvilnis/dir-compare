@@ -1,23 +1,27 @@
 {
   "name": "@renarsvilnis/dir-compare",
+  "description": "Utility for comparing directories",
   "version": "1.0.0",
-  "description": "Node JS directory compare",
-  "main": "src/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/renarsvilnis/dir-compare"
-  },
+  "author": "Renārs Vilnis",
   "keywords": [
     "compare",
     "directory",
     "folder"
   ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/renarsvilnis/dir-compare"
+  },
+  "bugs": {
+    "url": "https://github.com/renarsvilnis/dir-compare/issues"
+  },
+  "main": "lib/index.ts",
   "files": [
-    "src",
+    "lib/**/*",
     "package-lock.json",
     "package.json",
     "README.md",
-    "tsconfig.json",
     "LICENSE"
   ],
   "dependencies": {
@@ -49,11 +53,9 @@
     "test:alt": "ts-node tests/runTests.ts",
     "test:old": "istanbul cover tests/runTests.ts",
     "test:run": "npx jest ./tests/runTests.test.ts --watch",
-    "build": "tsc"
-  },
-  "author": "Renārs Vilnis",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/renarsvilnis/dir-compare/issues"
+    "build:ts": "tsc",
+    "build:clean": "rm -rf ./lib",
+    "build": "npm run build:clean && npm run build:ts",
+    "prepublish": "npm run build"
   }
 }

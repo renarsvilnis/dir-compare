@@ -12,12 +12,12 @@ export function createLeftOnlyDifference(entry1: Entry, level: number, relativeP
     name1: entry1.name,
     name2: undefined,
     state: "left",
-    type1: getType(entry1.stat),
+    type1: getType(entry1.stat!),
     type2: "missing",
-    size1: entry1.stat.size,
+    size1: entry1.stat!.size,
     size2: undefined,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-    date1: entry1.stat.mtimeMs,
+    date1: entry1.stat!.mtimeMs,
     date2: undefined,
     level
   };
@@ -33,12 +33,12 @@ export function createRightOnlyDifference(entry2: Entry, level: number, relative
     name2: entry2.name,
     state: "right",
     type1: "missing",
-    type2: getType(entry2.stat),
+    type2: getType(entry2.stat!),
     size1: undefined,
-    size2: entry2.stat.size,
+    size2: entry2.stat!.size,
     date1: undefined,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-    date2: entry2.stat.mtimeMs,
+    date2: entry2.stat!.mtimeMs,
     level
   };
 }
@@ -57,13 +57,13 @@ export function createEqualDifference(
     name1: entry1.name,
     name2: entry2.name,
     state: "equal",
-    type1: getType(entry1.stat),
-    type2: getType(entry2.stat),
-    size1: entry1.stat.size,
-    size2: entry2.stat.size,
+    type1: getType(entry1.stat!),
+    type2: getType(entry2.stat!),
+    size1: entry1.stat!.size,
+    size2: entry2.stat!.size,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-    date1: entry1.stat.mtimeMs,
-    date2: entry2.stat.mtimeMs,
+    date1: entry1.stat!.mtimeMs,
+    date2: entry2.stat!.mtimeMs,
     level
   };
 }
@@ -82,13 +82,13 @@ export function createDistinctDifference(
     name1: entry1.name,
     name2: entry2.name,
     state: "distinct",
-    type1: getType(entry1.stat),
-    type2: getType(entry2.stat),
-    size1: entry1.stat.size,
-    size2: entry2.stat.size,
+    type1: getType(entry1.stat!),
+    type2: getType(entry2.stat!),
+    size1: entry1.stat!.size,
+    size2: entry2.stat!.size,
     // TODO: before rewrite was mtime, now moved to mtimeMs, not sure what's better in output
-    date1: entry1.stat.mtimeMs,
-    date2: entry2.stat.mtimeMs,
+    date1: entry1.stat!.mtimeMs,
+    date2: entry2.stat!.mtimeMs,
     level
   };
 }

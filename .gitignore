@@ -172,3 +172,4 @@ $RECYCLE.BIN/
 /coverage/
 /test*.*
 build
+lib

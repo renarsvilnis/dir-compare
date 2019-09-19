@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "outDir": "build",
+    "outDir": "lib",
     "target": "es5",
     "module": "commonjs",
     "sourceMap": true,
     "types": ["node", "jest"],
     "lib": ["esnext"],
     "resolveJsonModule": true,
+    "declaration": true,
 
     /**
      * Make typescript stricter
@@ -33,7 +34,6 @@
   // ],
   "include": [
     // "tests/**/*",
-    "src/**/*",
-    "package.json"
+    "src/**/*"
   ]
 }

@@ -1,0 +1,2 @@
+- [ ] Remove .DS_STORE from npm package
+- [ ] Remove src/\*.test.ts files from npm package

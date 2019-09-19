@@ -129,9 +129,9 @@ export function filterEntry(entry: Entry, options: SearchOptions): boolean {
  * Comparator for directory entries sorting.
  */
 export function compareEntryCaseSensitive(a: Entry, b: Entry): CompareResult {
-  if (a.stat.isDirectory() && b.stat.isFile()) {
+  if (a.stat && a.stat.isDirectory() && b.stat && b.stat.isFile()) {
     return -1;
-  } else if (a.stat.isFile() && b.stat.isDirectory()) {
+  } else if (a.stat && a.stat.isFile() && b.stat && b.stat.isDirectory()) {
     return 1;
   } else {
     // http://stackoverflow.com/questions/1179366/is-there-a-javascript-strcmp
@@ -144,9 +144,9 @@ export function compareEntryCaseSensitive(a: Entry, b: Entry): CompareResult {
  * Comparator for directory entries sorting.
  */
 export function compareEntryIgnoreCase(a: Entry, b: Entry): CompareResult {
-  if (a.stat.isDirectory() && b.stat.isFile()) {
+  if (a.stat && a.stat.isDirectory() && b.stat && b.stat.isFile()) {
     return -1;
-  } else if (a.stat.isFile() && b.stat.isDirectory()) {
+  } else if (a.stat && a.stat.isFile() && b.stat && b.stat.isDirectory()) {
     return 1;
   } else {
     // http://stackoverflow.com/questions/1179366/is-there-a-javascript-strcmp
