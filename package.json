@@ -8,6 +8,9 @@
     "directory",
     "folder"
   ],
+  "engines": {
+    "node": ">=11.11.0"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,8 +19,9 @@
   "bugs": {
     "url": "https://github.com/renarsvilnis/dir-compare/issues"
   },
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
+  "mainn": "lib/index.js",
+  "typess": "lib/index.d.ts",
   "files": [
     "lib/**/*",
     "package-lock.json",
