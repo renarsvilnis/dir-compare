@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/renarsvilnis/dir-compare/issues"
   },
-  "main": "lib/index.ts",
+  "main": "lib/index.js",
   "files": [
     "lib/**/*",
     "package-lock.json",
