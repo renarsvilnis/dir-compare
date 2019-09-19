@@ -23,7 +23,7 @@
   "mainn": "lib/index.js",
   "typess": "lib/index.d.ts",
   "files": [
-    "lib/**/*",
+    "src/**/*",
     "package-lock.json",
     "package.json",
     "README.md",
