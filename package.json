@@ -17,6 +17,7 @@
     "url": "https://github.com/renarsvilnis/dir-compare/issues"
   },
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "files": [
     "lib/**/*",
     "package-lock.json",
@@ -56,6 +57,7 @@
     "build:ts": "tsc",
     "build:clean": "rm -rf ./lib",
     "build": "npm run build:clean && npm run build:ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "preversion": "npm run build:ts -- --noEmit"
   }
 }

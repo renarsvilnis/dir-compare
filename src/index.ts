@@ -3,6 +3,8 @@ import defaultFileCompare from "./fileCompareHandlers/defaultFileCompare";
 import lineBasedFileCompare from "./fileCompareHandlers/lineBasedFileCompare";
 import { SearchOptions } from "./types";
 
+export * from "./types";
+
 export default dirCompare;
 
 export const fileCompareHandlers = {
