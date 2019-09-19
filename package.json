@@ -1,7 +1,7 @@
 {
   "name": "@renarsvilnis/dir-compare",
   "description": "Utility for comparing directories",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Renārs Vilnis",
   "keywords": [
     "compare",
